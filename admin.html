@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NewsPortal · Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* ============================================================
+       ADMIN - ESTILOS
+    ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1e2a3a;
+      padding: 1rem;
+    }
+
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    /* HEADER */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #eef2f7;
+      margin-bottom: 2rem;
+    }
+
+    .admin-header h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.8rem;
+    }
+
+    .admin-header h1 i { color: #d32f2f; }
+
+    .admin-header .header-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-header .header-actions a,
+    .admin-header .header-actions button {
+      padding: 0.5rem 1.2rem;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .btn-back {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-back:hover { background: #2980b9; }
+
+    .btn-logout {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-logout:hover { background: #c0392b; }
+
+    /* TABS */
+    .admin-tabs {
+      display: flex;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid #eef2f7;
+      padding-bottom: 0.5rem;
+    }
+
+    .admin-tabs button {
+      padding: 0.5rem 1.2rem;
+      border: none;
+      background: transparent;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px 8px 0 0;
+      transition: 0.2s;
+      color: #6b7a8f;
+      font-size: 0.9rem;
+    }
+
+    .admin-tabs button:hover { background: #f0f3f8; }
+    .admin-tabs button.active {
+      background: #3498db;
+      color: white;
+    }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* ============================================================
+       FORMULÁRIOS
+    ============================================================ */
+    .admin-form {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+    }
+
+    .admin-form .form-group {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .admin-form label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4a5b6e;
+      margin-bottom: 0.2rem;
+    }
+
+    .admin-form input,
+    .admin-form select,
+    .admin-form textarea {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 2px solid #e0e6ed;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+
+    .admin-form input:focus,
+    .admin-form select:focus,
+    .admin-form textarea:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    .admin-form textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .admin-form button {
+      padding: 0.6rem 1.5rem;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      min-width: 120px;
+    }
+
+    .admin-form button:hover { background: #229954; }
+
+    /* ============================================================
+       TABELA
+    ============================================================ */
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .admin-table th {
+      text-align: left;
+      padding: 0.8rem;
+      background: #f8f9fa;
+      font-weight: 600;
+      border-bottom: 2px solid #eef2f7;
+    }
+
+    .admin-table td {
+      padding: 0.8rem;
+      border-bottom: 1px solid #eef2f7;
+      vertical-align: middle;
+    }
+
+    .admin-table .drag-handle {
+      cursor: grab;
+      color: #bcc9db;
+      padding: 0 0.5rem;
+    }
+
+    .admin-table .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      transition: 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .admin-table .btn-icon:hover { background: #f0f3f8; }
+    .admin-table .btn-icon.btn-danger:hover { background: #fee; color: #e74c3c; }
+
+    .status-badge {
+      padding: 0.15rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .status-badge.active { background: #d4edda; color: #155724; }
+    .status-badge.inactive { background: #f8d7da; color: #721c24; }
+
+    /* ============================================================
+       MATÉRIAS
+    ============================================================ */
+    .materia-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      border-bottom: 1px solid #eef2f7;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .materia-item .materia-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .materia-item .materia-info h4 { font-size: 1rem; margin-bottom: 0.2rem; }
+    .materia-item .materia-info .materia-meta {
+      font-size: 0.8rem;
+      color: #6b7a8f;
+    }
+
+    .materia-item .materia-actions {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .materia-item .materia-actions button {
+      padding: 0.3rem 0.8rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+
+    .btn-edit { background: #3498db; color: white; }
+    .btn-edit:hover { background: #2980b9; }
+    .btn-delete { background: #e74c3c; color: white; }
+    .btn-delete:hover { background: #c0392b; }
+
+    .status-published {
+      background: #27ae60;
+      color: white;
+      padding: 0.1rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      font-weight: 600;
+    }
+
+    .status-draft {
+      background: #f39c12;
+      color: white;
+      padding: 0.1rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       HISTÓRICO
+    ============================================================ */
+    .history-item {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #eef2f7;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .history-item .h-time { color: #6b7a8f; font-size: 0.8rem; }
+
+    /* ============================================================
+       PREVIEW DE CORES
+    ============================================================ */
+    .color-preview {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      border: 2px solid #e0e6ed;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 0.5rem;
+    }
+
+    .color-input-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .color-input-group input[type="color"] {
+      width: 50px;
+      height: 40px;
+      border: 2px solid #e0e6ed;
+      border-radius: 6px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       RESPONSIVIDADE
+    ============================================================ */
+    @media (max-width: 640px) {
+      .admin-container { padding: 1rem; }
+      .admin-header { flex-direction: column; align-items: stretch; }
+      .admin-form { flex-direction: column; }
+      .admin-form .form-group { min-width: 100%; }
+      .admin-table { font-size: 0.8rem; }
+      .admin-table th, .admin-table td { padding: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-container">
+
+  <!-- HEADER -->
+  <div class="admin-header">
+    <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
+    <div class="header-actions">
+      <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Ver Site</a>
+      <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="admin-tabs">
+    <button class="active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
+    <button onclick="switchTab('settings')"><i class="fas fa-palette"></i> Personalizar</button>
+    <button onclick="switchTab('categories')"><i class="fas fa-tags"></i> Categorias</button>
+    <button onclick="switchTab('materias')"><i class="fas fa-newspaper"></i> Matérias</button>
+    <button onclick="switchTab('users')"><i class="fas fa-users"></i> Usuários</button>
+    <button onclick="switchTab('history')"><i class="fas fa-history"></i> Histórico</button>
+  </div>
+
+  <!-- ============================================================
+    PAINEL DASHBOARD
+  ============================================================ -->
+  <div class="admin-panel active" id="panel-dashboard">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:1rem; margin-bottom:2rem;">
+      <div style="background:#f8f9fa; padding:1.2rem; border-radius:0.8rem; text-align:center;">
+        <div style="font-size:2rem; font-weight:700; color:#d32f2f;" id="totalMaterias">0</div>
+        <div style="color:#6b7a8f; font-size:0.8rem;">Matérias Publicadas</div>
+      </div>
+      <div style="background:#f8f9fa; padding:1.2rem; border-radius:0.8rem; text-align:center;">
+        <div style="font-size:2rem; font-weight:700; color:#3498db;" id="totalCategories">0</div>
+        <div style="color:#6b7a8f; font-size:0.8rem;">Categorias</div>
+      </div>
+      <div style="background:#f8f9fa; padding:1.2rem; border-radius:0.8rem; text-align:center;">
+        <div style="font-size:2rem; font-weight:700; color:#27ae60;" id="totalViews">0</div>
+        <div style="color:#6b7a8f; font-size:0.8rem;">Visualizações</div>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:1rem;"><i class="fas fa-clock"></i> Últimas Matérias</h3>
+    <div id="lastMaterias"></div>
+  </div>
+
+  <!-- ============================================================
+    PAINEL PERSONALIZAÇÃO
+  ============================================================ -->
+  <div class="admin-panel" id="panel-settings">
+    <h3><i class="fas fa-palette"></i> Personalização do Site</h3>
+    <p style="color:#6b7a8f; margin-bottom:1rem;">Altere as cores, fontes e elementos visuais do site em tempo real.</p>
+
+    <form id="settingsForm" class="admin-form" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; background:#f8f9fa; padding:1.5rem; border-radius:1rem;">
+      
+      <!-- Cores -->
+      <div style="grid-column: 1/-1;">
+        <h4 style="margin-bottom:0.5rem;"><i class="fas fa-paint-bucket"></i> Cores</h4>
+      </div>
+
+      <div class="form-group">
+        <label>Cor Primária</label>
+        <div class="color-input-group">
+          <input type="color" id="primaryColor" value="#d32f2f">
+          <input type="text" id="primaryColorText" value="#d32f2f" style="flex:1;">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Cor Secundária</label>
+        <div class="color-input-group">
+          <input type="color" id="secondaryColor" value="#1e2a3a">
+          <input type="text" id="secondaryColorText" value="#1e2a3a" style="flex:1;">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Cor de Fundo</label>
+        <div class="color-input-group">
+          <input type="color" id="backgroundColor" value="#f4f6f9">
+          <input type="text" id="backgroundColorText" value="#f4f6f9" style="flex:1;">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Cor do Texto</label>
+        <div class="color-input-group">
+          <input type="color" id="textColor" value="#1e2a3a">
+          <input type="text" id="textColorText" value="#1e2a3a" style="flex:1;">
+        </div>
+      </div>
+
+      <!-- Fontes -->
+      <div style="grid-column: 1/-1; margin-top:0.5rem;">
+        <h4 style="margin-bottom:0.5rem;"><i class="fas fa-font"></i> Fontes</h4>
+      </div>
+
+      <div class="form-group">
+        <label>Fonte Principal</label>
+        <select id="fontFamily">
+          <option value="Segoe UI, Roboto, system-ui, sans-serif">Segoe UI</option>
+          <option value="Arial, Helvetica, sans-serif">Arial</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+          <option value="'Courier New', monospace">Courier New</option>
+          <option value="system-ui, -apple-system, sans-serif">System UI</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Fonte de Títulos</label>
+        <select id="headingFont">
+          <option value="Segoe UI, Roboto, system-ui, sans-serif">Segoe UI</option>
+          <option value="Arial, Helvetica, sans-serif">Arial</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+          <option value="'Courier New', monospace">Courier New</option>
+          <option value="system-ui, -apple-system, sans-serif">System UI</option>
+        </select>
+      </div>
+
+      <!-- Logo -->
+      <div style="grid-column: 1/-1; margin-top:0.5rem;">
+        <h4 style="margin-bottom:0.5rem;"><i class="fas fa-tag"></i> Logo</h4>
+      </div>
+
+      <div class="form-group">
+        <label>Texto do Logo</label>
+        <input type="text" id="logoText" value="NewsPortal">
+      </div>
+
+      <div class="form-group">
+        <label>Subtexto do Logo</label>
+        <input type="text" id="logoSubtext" value="· 2026">
+      </div>
+
+      <div class="form-group">
+        <label>Ícone do Logo (Font Awesome)</label>
+        <input type="text" id="logoIcon" value="fa-newspaper">
+        <small style="display:block; color:#6b7a8f; font-size:0.7rem; margin-top:0.2rem;">Ex: fa-newspaper, fa-globe, fa-bolt</small>
+      </div>
+
+      <!-- Layout -->
+      <div style="grid-column: 1/-1; margin-top:0.5rem;">
+        <h4 style="margin-bottom:0.5rem;"><i class="fas fa-layer-group"></i> Layout</h4>
+      </div>
+
+      <div class="form-group">
+        <label>Largura Máxima</label>
+        <select id="containerMaxWidth">
+          <option value="1280px">1280px (Padrão)</option>
+          <option value="1440px">1440px (Grande)</option>
+          <option value="1100px">1100px (Compacto)</option>
+          <option value="100%">100% (Fluido)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Raio das Bordas</label>
+        <select id="borderRadius">
+          <option value="1.5rem">1.5rem (Padrão)</option>
+          <option value="0.5rem">0.5rem (Pequeno)</option>
+          <option value="2rem">2rem (Grande)</option>
+          <option value="0">0 (Sem borda)</option>
+        </select>
+      </div>
+
+      <!-- Botão Salvar -->
+      <div style="grid-column: 1/-1; margin-top:0.5rem;">
+        <button type="submit" style="width:100%; padding:0.8rem; font-size:1.1rem;">
+          <i class="fas fa-save"></i> Salvar Personalização
+        </button>
+      </div>
+    </form>
+
+    <!-- Preview ao vivo -->
+    <div style="margin-top:1.5rem; padding:1rem; background:#f8f9fa; border-radius:0.8rem;">
+      <h4><i class="fas fa-eye"></i> Preview ao vivo</h4>
+      <div style="margin-top:0.5rem; padding:1rem; border-radius:0.5rem; border:2px dashed #e0e6ed;" id="livePreview">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1.5rem;" id="previewIcon"><i class="fas fa-newspaper"></i></span>
+          <span style="font-size:1.2rem; font-weight:700;" id="previewLogo">NewsPortal <small style="font-weight:400; font-size:0.7rem; color:#6b7a8f;">· 2026</small></span>
+        </div>
+        <div style="margin-top:0.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+          <span style="background:#d32f2f; color:white; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem;" id="previewButton">Destaque</span>
+          <span style="background:#1e2a3a; color:white; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem;" id="previewButton2">Notícia</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+    PAINEL CATEGORIAS
+  ============================================================ -->
+  <div class="admin-panel" id="panel-categories">
+    <h3><i class="fas fa-plus-circle"></i> Nova Categoria</h3>
+    <form class="admin-form" id="categoryForm">
+      <div class="form-group">
+        <label>Nome da Categoria</label>
+        <input type="text" id="catName" placeholder="Ex: Ciência" required>
+      </div>
+      <div class="form-group">
+        <label>Ícone (Font Awesome)</label>
+        <input type="text" id="catIcon" placeholder="fa-flask" value="fa-tag">
+      </div>
+      <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
+    </form>
+
+    <h3 style="margin-top:2rem;"><i class="fas fa-list"></i> Categorias</h3>
+    <p style="color:#6b7a8f; font-size:0.85rem;">Arraste para reordenar</p>
+    <table class="admin-table" id="categoriesTable">
+      <thead>
+        <tr>
+          <th style="width:30px;">#</th>
+          <th>Nome</th>
+          <th>Slug</th>
+          <th>Ícone</th>
+          <th>Status</th>
+          <th style="text-align:right;">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="categoriesBody">
+        <!-- Preenchido via JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================================
+    PAINEL MATÉRIAS
+  ============================================================ -->
+  <div class="admin-panel" id="panel-materias">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+      <h3><i class="fas fa-newspaper"></i> Gerenciar Matérias</h3>
+      <button onclick="openEditor()" style="background:#27ae60; color:white; border:none; padding:0.5rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;">
+        <i class="fas fa-plus"></i> Nova Matéria
+      </button>
+    </div>
+    <div id="materiasListAdmin">
+      <!-- Preenchido via JS -->
+    </div>
+  </div>
+
+  <!-- ============================================================
+    PAINEL USUÁRIOS
+  ============================================================ -->
+  <div class="admin-panel" id="panel-users">
+    <h3><i class="fas fa-user-plus"></i> Novo Usuário</h3>
+    <form class="admin-form" id="userForm">
+      <div class="form-group">
+        <label>Usuário</label>
+        <input type="text" id="newUsername" placeholder="Nome" required>
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="newPassword" placeholder="Senha" required>
+      </div>
+      <div class="form-group">
+        <label>Nível</label>
+        <select id="newUserLevel">
+          <option value="admin">Administrador</option>
+          <option value="editor">Editor</option>
+          <option value="journalist">Jornalista</option>
+        </select>
+      </div>
+      <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
+    </form>
+
+    <h3 style="margin-top:2rem;"><i class="fas fa-users"></i> Usuários Cadastrados</h3>
+    <div id="usersList"></div>
+  </div>
+
+  <!-- ============================================================
+    PAINEL HISTÓRICO
+  ============================================================ -->
+  <div class="admin-panel" id="panel-history">
+    <h3><i class="fas fa-history"></i> Histórico de Alterações</h3>
+    <div id="historyListAdmin">
+      <!-- Preenchido via JS -->
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+   MODAL EDITOR DE MATÉRIA
+============================================================ -->
+<div class="modal-overlay" id="editorModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+  <div style="background:white; padding:2rem; border-radius:1.5rem; max-width:800px; width:95%; max-height:90vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+      <h3 id="editorTitle"><i class="fas fa-edit"></i> Nova Matéria</h3>
+      <button onclick="closeEditor()" style="background:#e74c3c; color:white; border:none; padding:0.3rem 1.2rem; border-radius:6px; cursor:pointer;">Fechar</button>
+    </div>
+
+    <label>Título</label>
+    <input type="text" id="editTitle" style="width:100%; padding:0.7rem; border:2px solid #e0e6ed; border-radius:8px; margin-bottom:1rem;">
+
+    <label>Categoria</label>
+    <select id="editCategory" style="width:100%; padding:0.7rem; border:2px solid #e0e6ed; border-radius:8px; margin-bottom:1rem;"></select>
+
+    <label>URL da Imagem (opcional)</label>
+    <input type="text" id="editImage" style="width:100%; padding:0.7rem; border:2px solid #e0e6ed; border-radius:8px; margin-bottom:1rem;" placeholder="https://exemplo.com/imagem.jpg">
+
+    <label>Conteúdo</label>
+    <div style="border:2px solid #e0e6ed; border-radius:8px; padding:0.5rem; background:#f8f9fa; margin-bottom:0.5rem;">
+      <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:0.5rem;">
+        <button onclick="formatText('bold')" style="padding:0.2rem 0.6rem; border:1px solid #dce1e8; border-radius:4px; background:white; cursor:pointer;"><b>N</b></button>
+        <button onclick="formatText('italic')" style="padding:0.2rem 0.6rem; border:1px solid #dce1e8; border-radius:4px; background:white; cursor:pointer;"><i>I</i></button>
+        <button onclick="formatText('underline')" style="padding:0.2rem 0.6rem; border:1px solid #dce1e8; border-radius:4px; background:white; cursor:pointer;"><u>S</u></button>
+        <button onclick="formatText('justifyLeft')" style="padding:0.2rem 0.6rem; border:1px solid #dce1e8; border-radius:4px; background:white; cursor:pointer;"><i class="fas fa-align-left"></i></button>
+        <button onclick="formatText('justifyCenter')" style="padding:0.2rem 0.6rem; border:1px solid #dce1e8; border-radius:4px; background:white; cursor:pointer;"><i class="fas fa-align-center"></i></button>
+        <button onclick="formatText('justifyRight')" style="padding:0.2rem 0.6rem; border:1px solid #dce1e8; border-radius:4px; background:white; cursor:pointer;"><i class="fas fa-align-right"></i></button>
+        <button onclick="formatText('insertUnorderedList')" style="padding:0.2rem 0.6rem; border:1px solid #dce1e8; border-radius:4px; background:white; cursor:pointer;"><i class="fas fa-list-ul"></i></button>
+        <button onclick="formatText('insertOrderedList')" style="padding:0.2rem 0.6rem; border:1px solid #dce1e8; border-radius:4px; background:white; cursor:pointer;"><i class="fas fa-list-ol"></i></button>
+        <input type="color" onchange="formatText('foreColor', this.value)" value="#1e2a3a" style="width:30px; height:28px; border:none; cursor:pointer; border-radius:4px;">
+      </div>
+      <div id="editContent" contenteditable="true" style="min-height:200px; padding:0.5rem; background:white; border-radius:4px; outline:none;">
+        <p>Digite o conteúdo aqui...</p>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
+      <button onclick="saveMateria('published')" style="background:#27ae60; color:white; border:none; padding:0.6rem 1.5rem; border-radius:8px; font-weight:600; cursor:pointer;">
+        <i class="fas fa-check"></i> Publicar
+      </button>
+      <button onclick="saveMateria('draft')" style="background:#f39c12; color:white; border:none; padding:0.6rem 1.5rem; border-radius:8px; font-weight:600; cursor:pointer;">
+        <i class="fas fa-save"></i> Rascunho
+      </button>
+      <button onclick="closeEditor()" style="background:#e74c3c; color:white; border:none; padding:0.6rem 1.5rem; border-radius:8px; font-weight:600; cursor:pointer;">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="data/database.js"></script>
+<script>
+  // ============================================================
+  // ADMIN - PAINEL COMPLETO
+  // ============================================================
+
+  let editingMateriaId = null;
+
+  // ============================================================
+  // UTILITÁRIOS
+  // ============================================================
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  // ============================================================
+  // TABS
+  // ============================================================
+  function switchTab(tab) {
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById(`panel-${tab}`).classList.add('active');
+    document.querySelector(`.admin-tabs button[onclick*="${tab}"]`).classList.add('active');
+    
+    if (tab === 'dashboard') updateDashboard();
+    if (tab === 'settings') loadSettings();
+    if (tab === 'categories') renderCategories();
+    if (tab === 'materias') renderMateriasAdmin();
+    if (tab === 'users') renderUsers();
+    if (tab === 'history') renderHistory();
+  }
+
+  // ============================================================
+  // DASHBOARD
+  // ============================================================
+  function updateDashboard() {
+    const materias = DB.getAllMaterias();
+    const published = materias.filter(m => m.status === 'published');
+    const categories = DB.getCategories();
+    const totalViews = materias.reduce((sum, m) => sum + (m.views || 0), 0);
+
+    document.getElementById('totalMaterias').textContent = published.length;
+    document.getElementById('totalCategories').textContent = categories.length;
+    document.getElementById('totalViews').textContent = totalViews.toLocaleString();
+
+    const lastList = document.getElementById('lastMaterias');
+    lastList.innerHTML = published.slice(0, 5).map(m => `
+      <div class="materia-item">
+        <div class="materia-info">
+          <h4>${m.title}</h4>
+          <div class="materia-meta">
+            <span class="status-published">Publicado</span>
+            ${m.category} · ${formatDate(m.date)} · ${m.views || 0} views
+          </div>
+        </div>
+        <div class="materia-actions">
+          <button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ============================================================
+  // PERSONALIZAÇÃO (SETTINGS)
+  // ============================================================
+  function loadSettings() {
+    const settings = DB.getSettings();
+    
+    // Cores
+    document.getElementById('primaryColor').value = settings.primaryColor;
+    document.getElementById('primaryColorText').value = settings.primaryColor;
+    document.getElementById('secondaryColor').value = settings.secondaryColor;
+    document.getElementById('secondaryColorText').value = settings.secondaryColor;
+    document.getElementById('backgroundColor').value = settings.backgroundColor;
+    document.getElementById('backgroundColorText').value = settings.backgroundColor;
+    document.getElementById('textColor').value = settings.textColor;
+    document.getElementById('textColorText').value = settings.textColor;
+    
+    // Fontes
+    document.getElementById('fontFamily').value = settings.fontFamily;
+    document.getElementById('headingFont').value = settings.headingFont;
+    
+    // Logo
+    document.getElementById('logoText').value = settings.logoText;
+    document.getElementById('logoSubtext').value = settings.logoSubtext;
+    document.getElementById('logoIcon').value = settings.logoIcon;
+    
+    // Layout
+    document.getElementById('containerMaxWidth').value = settings.containerMaxWidth;
+    document.getElementById('borderRadius').value = settings.borderRadius;
+    
+    // Atualizar preview
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const primary = document.getElementById('primaryColor').value;
+    const secondary = document.getElementById('secondaryColor').value;
+    const logoText = document.getElementById('logoText').value;
+    const logoSubtext = document.getElementById('logoSubtext').value;
+    const logoIcon = document.getElementById('logoIcon').value;
+
+    document.getElementById('previewIcon').innerHTML = `<i class="fas ${logoIcon}"></i>`;
+    document.getElementById('previewLogo').innerHTML = `${logoText} <small style="font-weight:400; font-size:0.7rem; color:#6b7a8f;">${logoSubtext}</small>`;
+    document.getElementById('previewButton').style.background = primary;
+    document.getElementById('previewButton2').style.background = secondary;
+  }
+
+  // Sincronizar inputs de cor
+  document.querySelectorAll('input[type="color"]').forEach(input => {
+    input.addEventListener('input', function() {
+      const textInput = document.getElementById(this.id + 'Text');
+      if (textInput) textInput.value = this.value;
+      updatePreview();
+    });
+  });
+
+  document.querySelectorAll('.color-input-group input[type="text"]').forEach(input => {
+    input.addEventListener('input', function() {
+      const colorInput = document.getElementById(this.id.replace('Text', ''));
+      if (colorInput) colorInput.value = this.value;
+      updatePreview();
+    });
+  });
+
+  // Outros campos que afetam o preview
+  document.getElementById('logoText').addEventListener('input', updatePreview);
+  document.getElementById('logoSubtext').addEventListener('input', updatePreview);
+  document.getElementById('logoIcon').addEventListener('input', updatePreview);
+
+  // Salvar configurações
+  document.getElementById('settingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const settings = {
+      primaryColor: document.getElementById('primaryColor').value,
+      secondaryColor: document.getElementById('secondaryColor').value,
+      backgroundColor: document.getElementById('backgroundColor').value,
+      textColor: document.getElementById('textColor').value,
+      fontFamily: document.getElementById('fontFamily').value,
+      headingFont: document.getElementById('headingFont').value,
+      logoText: document.getElementById('logoText').value,
+      logoSubtext: document.getElementById('logoSubtext').value,
+      logoIcon: document.getElementById('logoIcon').value,
+      containerMaxWidth: document.getElementById('containerMaxWidth').value,
+      borderRadius: document.getElementById('borderRadius').value
+    };
+
+    DB.updateSettings(settings);
+    alert('✅ Configurações salvas com sucesso!');
+    
+    // Aplicar mudanças no site (atualizar a página ao visualizar)
+    if (confirm('Deseja visualizar o site com as novas configurações?')) {
+      window.location.href = 'index.html';
+    }
+  });
+
+  // ============================================================
+  // CATEGORIAS
+  // ============================================================
+  function renderCategories() {
+    const tbody = document.getElementById('categoriesBody');
+    const categories = DB.getCategories();
+    
+    tbody.innerHTML = categories.map((cat, index) => `
+      <tr data-id="${cat.id}" draggable="true">
+        <td><span class="drag-handle"><i class="fas fa-grip-vertical"></i></span></td>
+        <td>
+          <input type="text" value="${cat.name}" class="edit-cat-name" data-id="${cat.id}" style="border:1px solid transparent; background:transparent; padding:4px 6px; border-radius:4px; width:100%; font-weight:600;" onfocus="this.style.borderColor='#3498db'; this.style.background='white';" onblur="updateCategoryName(${cat.id}, this.value)">
+        </td>
+        <td>/${cat.slug}.html</td>
+        <td><i class="fas ${cat.icon}"></i> ${cat.icon}</td>
+        <td>
+          <span class="status-badge ${cat.active ? 'active' : 'inactive'}">
+            ${cat.active ? 'Ativo' : 'Inativo'}
+          </span>
+        </td>
+        <td style="text-align:right;">
+          <button class="btn-icon" onclick="toggleCategoryStatus(${cat.id})" title="${cat.active ? 'Desativar' : 'Ativar'}">
+            <i class="fas ${cat.active ? 'fa-eye' : 'fa-eye-slash'}"></i>
+          </button>
+          <button class="btn-icon btn-danger" onclick="deleteCategory(${cat.id})" title="Excluir">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    setupDragAndDrop();
+  }
+
+  function setupDragAndDrop() {
+    const rows = document.querySelectorAll('#categoriesBody tr');
+    let dragItem = null;
+
+    rows.forEach(row => {
+      row.addEventListener('dragstart', (e) => {
+        dragItem = row;
+        row.style.opacity = '0.5';
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      row.addEventListener('dragend', () => {
+        row.style.opacity = '1';
+      });
+
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const target = e.currentTarget;
+        if (target !== dragItem) {
+          const parent = target.parentNode;
+          const allRows = Array.from(parent.children);
+          const dragIndex = allRows.indexOf(dragItem);
+          const targetIndex = allRows.indexOf(target);
+          
+          if (dragIndex < targetIndex) {
+            parent.insertBefore(dragItem, target.nextSibling);
+          } else {
+            parent.insertBefore(dragItem, target);
+          }
+        }
+      });
+    });
+
+    document.addEventListener('dragend', () => {
+      const rows = document.querySelectorAll('#categoriesBody tr');
+      const orderedIds = Array.from(rows).map(row => parseInt(row.dataset.id));
+      DB.reorderCategories(orderedIds);
+      renderCategories();
+    });
+  }
+
+  function updateCategoryName(id, newName) {
+    if (newName.trim()) {
+      DB.editCategory(id, { name: newName.trim() });
+      renderCategories();
+    }
+  }
+
+  function toggleCategoryStatus(id) {
+    const cat = DB.categories.find(c => c.id === id);
+    if (cat) {
+      DB.editCategory(id, { active: !cat.active });
+      renderCategories();
+    }
+  }
+
+  function deleteCategory(id) {
+    if (confirm('Tem certeza que deseja desativar esta categoria?')) {
+      DB.deleteCategory(id);
+      renderCategories();
+    }
+  }
+
+  document.getElementById('categoryForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('catName').value.trim();
+    const icon = document.getElementById('catIcon').value.trim() || 'fa-tag';
+    
+    if (name) {
+      DB.addCategory(name, icon);
+      document.getElementById('catName').value = '';
+      document.getElementById('catIcon').value = 'fa-tag';
+      renderCategories();
+    }
+  });
+
+  // ============================================================
+  // MATÉRIAS
+  // ============================================================
+  function renderMateriasAdmin() {
+    const list = document.getElementById('materiasListAdmin');
+    const materias = DB.getAllMaterias();
+    
+    list.innerHTML = materias.map(m => `
+      <div class="materia-item">
+        <div class="materia-info">
+          <h4>${m.title}</h4>
+          <div class="materia-meta">
+            <span class="${m.status === 'published' ? 'status-published' : 'status-draft'}">${m.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
+            ${m.category} · ${formatDate(m.date)} · ${m.views || 0} views
+          </div>
+        </div>
+        <div class="materia-actions">
+          <button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i> Editar</button>
+          <button class="btn-delete" onclick="deleteMateria(${m.id})"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function editMateria(id) {
+    const materia = DB.materias.find(m => m.id === id);
+    if (!materia) return;
+    
+    editingMateriaId = id;
+    document.getElementById('editorTitle').textContent = `✎ Editando: ${materia.title}`;
+    document.getElementById('editTitle').value = materia.title;
+    document.getElementById('editImage').value = materia.image || '';
+    document.getElementById('editContent').innerHTML = materia.content;
+    document.getElementById('editorModal').style.display = 'flex';
+    
+    populateCategorySelect(materia.category);
+  }
+
+  function openEditor() {
+    editingMateriaId = null;
+    document.getElementById('editorTitle').textContent = '✏️ Nova Matéria';
+    document.getElementById('editTitle').value = '';
+    document.getElementById('editImage').value = '';
+    document.getElementById('editContent').innerHTML = '<p>Digite o conteúdo aqui...</p>';
+    document.getElementById('editorModal').style.display = 'flex';
+    populateCategorySelect();
+  }
+
+  function closeEditor() {
+    document.getElementById('editorModal').style.display = 'none';
+    editingMateriaId = null;
+  }
+
+  function populateCategorySelect(selected = null) {
+    const select = document.getElementById('editCategory');
+    const categories = DB.getCategories();
+    select.innerHTML = categories.map(c => `
+      <option value="${c.name}" ${c.name === selected ? 'selected' : ''}>${c.name}</option>
+    `).join('');
+  }
+
+  function formatText(command, value = null) {
+    const content = document.getElementById('editContent');
+    content.focus();
+    if (command === 'foreColor') {
+      document.execCommand('foreColor', false, value);
+    } else {
+      document.execCommand(command, false, null);
+    }
+  }
+
+  function saveMateria(status) {
+    const title = document.getElementById('editTitle').value.trim();
+    const category = document.getElementById('editCategory').value;
+    const image = document.getElementById('editImage').value.trim();
+    const content = document.getElementById('editContent').innerHTML;
+
+    if (!title) {
+      alert('⚠️ O título é obrigatório.');
+      return;
+    }
+
+    const data = { title, category, image, content, status };
+
+    if (editingMateriaId) {
+      DB.editMateria(editingMateriaId, data);
+    } else {
+      DB.addMateria(data);
+    }
+
+    closeEditor();
+    renderMateriasAdmin();
+    alert(`✅ Matéria ${status === 'published' ? 'publicada' : 'salva como rascunho'} com sucesso!`);
+  }
+
+  function deleteMateria(id) {
+    if (confirm('Tem certeza que deseja excluir esta matéria?')) {
+      DB.deleteMateria(id);
+      renderMateriasAdmin();
+    }
+  }
+
+  // ============================================================
+  // USUÁRIOS
+  // ============================================================
+  function renderUsers() {
+    const list = document.getElementById('usersList');
+    list.innerHTML = Object.entries(DB.users).map(([username, data]) => `
+      <div class="materia-item">
+        <div>
+          <strong>${username}</strong> (${data.name})
+          <span style="background:#3498db; color:white; padding:0.1rem 0.6rem; border-radius:12px; font-size:0.7rem; margin-left:0.5rem;">${data.level}</span>
+        </div>
+        <div>
+          <button class="btn-delete" onclick="deleteUser('${username}')" style="background:#e74c3c; color:white; border:none; padding:0.2rem 0.8rem; border-radius:4px; cursor:pointer;">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('userForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const username = document.getElementById('newUsername').value.trim();
+    const password = document.getElementById('newPassword').value.trim();
+    const level = document.getElementById('newUserLevel').value;
+
+    if (!username || !password) {
+      alert('Preencha todos os campos.');
+      return;
+    }
+
+    if (DB.users[username]) {
+      alert('Usuário já existe!');
+      return;
+    }
+
+    DB.users[username] = { password, level, name: username.charAt(0).toUpperCase() + username.slice(1) };
+    DB.addHistory(`Adicionou usuário: ${username} (${level})`);
+    DB.save();
+    renderUsers();
+    document.getElementById('userForm').reset();
+    alert('✅ Usuário criado com sucesso!');
+  });
+
+  function deleteUser(username) {
+    if (username === 'admin') {
+      alert('Não é possível remover o usuário admin.');
+      return;
+    }
+    if (confirm(`Remover usuário "${username}"?`)) {
+      delete DB.users[username];
+      DB.addHistory(`Removeu usuário: ${username}`);
+      DB.save();
+      renderUsers();
+    }
+  }
+
+  // ============================================================
+  // HISTÓRICO
+  // ============================================================
+  function renderHistory() {
+    const list = document.getElementById('historyListAdmin');
+    list.innerHTML = DB.history.slice(0, 30).map(item => `
+      <div class="history-item">
+        <span><strong>${item.user}</strong> ${item.message}</span>
+        <span class="h-time">${formatDate(item.time)}</span>
+      </div>
+    `).join('');
+  }
+
+  // ============================================================
+  // LOGOUT
+  // ============================================================
+  function logout() {
+    if (confirm('Deseja sair do painel administrativo?')) {
+      window.location.href = 'index.html';
+    }
+  }
+
+  // ============================================================
+  // INICIALIZAÇÃO
+  // ============================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    // Garantir que as categorias padrão existam
+    if (DB.categories.length === 0) {
+      DB.categories = JSON.parse(JSON.stringify(DB.settings.defaultCategories));
+      DB.save();
+    }
+    
+    updateDashboard();
+    loadSettings();
+    renderCategories();
+    renderMateriasAdmin();
+    renderUsers();
+    renderHistory();
+
+    console.log('🔐 Painel Admin carregado!');
+    console.log(`📂 ${DB.getCategories().length} categorias`);
+    console.log(`📄 ${DB.getAllMaterias().length} matérias`);
+  });
+
+</script>
+</body>
+</html>

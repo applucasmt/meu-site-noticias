@@ -1,0 +1,9 @@
+# Redirecionar URLs amigáveis
+/politica /categoria.html 200
+/economia /categoria.html 200
+/tecnologia /categoria.html 200
+/saude /categoria.html 200
+/cultura /categoria.html 200
+/esportes /categoria.html 200
+/internacional /categoria.html 200
+/* /index.html 404
