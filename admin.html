@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     /* ============================================================
-       ADMIN - ESTILOS EXCLUSIVOS (SEM CONFLITOS)
+       ADMIN - ESTILOS
     ============================================================ */
     * {
       margin: 0;
@@ -31,7 +31,6 @@
       box-shadow: 0 8px 30px rgba(0,0,0,0.08);
     }
 
-    /* HEADER */
     .admin-header {
       display: flex;
       justify-content: space-between;
@@ -70,19 +69,12 @@
       font-size: 0.9rem;
     }
 
-    .btn-back {
-      background: #3498db;
-      color: white;
-    }
+    .btn-back { background: #3498db; color: white; }
     .btn-back:hover { background: #2980b9; }
 
-    .btn-logout {
-      background: #e74c3c;
-      color: white;
-    }
+    .btn-logout { background: #e74c3c; color: white; }
     .btn-logout:hover { background: #c0392b; }
 
-    /* TABS */
     .admin-tabs {
       display: flex;
       gap: 0.3rem;
@@ -113,9 +105,6 @@
     .admin-panel { display: none; }
     .admin-panel.active { display: block; }
 
-    /* ============================================================
-       DASHBOARD - CARDS
-    ============================================================ */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -139,74 +128,6 @@
     .stat-card .label {
       color: #6b7a8f;
       font-size: 0.8rem;
-    }
-
-    /* ============================================================
-       LISTA DE MATÉRIAS
-    ============================================================ */
-    .materia-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.8rem;
-      border-bottom: 1px solid #eef2f7;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .materia-item:last-child { border-bottom: none; }
-
-    .materia-item .materia-info {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .materia-item .materia-info h4 {
-      font-size: 1rem;
-      margin-bottom: 0.2rem;
-    }
-
-    .materia-item .materia-info .materia-meta {
-      font-size: 0.8rem;
-      color: #6b7a8f;
-    }
-
-    .materia-item .materia-actions {
-      display: flex;
-      gap: 0.3rem;
-    }
-
-    .materia-item .materia-actions button {
-      padding: 0.3rem 0.8rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: 0.2s;
-    }
-
-    .btn-edit { background: #3498db; color: white; }
-    .btn-edit:hover { background: #2980b9; }
-
-    .btn-delete { background: #e74c3c; color: white; }
-    .btn-delete:hover { background: #c0392b; }
-
-    .status-published {
-      background: #27ae60;
-      color: white;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
-      font-size: 0.65rem;
-      font-weight: 600;
-    }
-
-    .status-draft {
-      background: #f39c12;
-      color: white;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
-      font-size: 0.65rem;
-      font-weight: 600;
     }
 
     /* ============================================================
@@ -266,9 +187,6 @@
 
     .admin-form button:hover { background: #229954; }
 
-    /* ============================================================
-       TABELA DE CATEGORIAS
-    ============================================================ */
     .admin-table {
       width: 100%;
       border-collapse: collapse;
@@ -318,9 +236,64 @@
     .status-badge.active { background: #d4edda; color: #155724; }
     .status-badge.inactive { background: #f8d7da; color: #721c24; }
 
-    /* ============================================================
-       HISTÓRICO
-    ============================================================ */
+    .materia-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      border-bottom: 1px solid #eef2f7;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .materia-item .materia-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .materia-item .materia-info h4 { font-size: 1rem; margin-bottom: 0.2rem; }
+    .materia-item .materia-info .materia-meta {
+      font-size: 0.8rem;
+      color: #6b7a8f;
+    }
+
+    .materia-item .materia-actions {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .materia-item .materia-actions button {
+      padding: 0.3rem 0.8rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+
+    .btn-edit { background: #3498db; color: white; }
+    .btn-edit:hover { background: #2980b9; }
+    .btn-delete { background: #e74c3c; color: white; }
+    .btn-delete:hover { background: #c0392b; }
+
+    .status-published {
+      background: #27ae60;
+      color: white;
+      padding: 0.1rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      font-weight: 600;
+    }
+
+    .status-draft {
+      background: #f39c12;
+      color: white;
+      padding: 0.1rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      font-weight: 600;
+    }
+
     .history-item {
       padding: 0.6rem 0;
       border-bottom: 1px solid #eef2f7;
@@ -332,15 +305,55 @@
     .history-item .h-time { color: #6b7a8f; font-size: 0.8rem; }
 
     /* ============================================================
-       PREVIEW DE CORES
+       SETTINGS
     ============================================================ */
-    .color-input-group {
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 1rem;
+    }
+
+    .settings-grid .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .settings-grid .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .settings-grid .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4a5b6e;
+    }
+
+    .settings-grid .form-group input,
+    .settings-grid .form-group select {
+      padding: 0.6rem 0.8rem;
+      border: 2px solid #e0e6ed;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+
+    .settings-grid .form-group input:focus,
+    .settings-grid .form-group select:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    .settings-grid .form-group .color-input-group {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
-    .color-input-group input[type="color"] {
+    .settings-grid .form-group .color-input-group input[type="color"] {
       width: 50px;
       height: 40px;
       border: 2px solid #e0e6ed;
@@ -349,38 +362,38 @@
       cursor: pointer;
     }
 
-    /* ============================================================
-       USUÁRIOS
-    ============================================================ */
-    .user-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .settings-grid .form-group .color-input-group input[type="text"] {
+      flex: 1;
+    }
+
+    .btn-save-settings {
+      grid-column: 1 / -1;
       padding: 0.8rem;
-      border-bottom: 1px solid #eef2f7;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .user-item .user-role {
-      background: #3498db;
-      color: white;
-      padding: 0.1rem 0.6rem;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      margin-left: 0.5rem;
-    }
-
-    .user-item .btn-delete-user {
-      background: #e74c3c;
+      background: #27ae60;
       color: white;
       border: none;
-      padding: 0.2rem 0.8rem;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
       cursor: pointer;
+      transition: 0.2s;
     }
 
-    .user-item .btn-delete-user:hover { background: #c0392b; }
+    .btn-save-settings:hover { background: #229954; }
+
+    .preview-box {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 0.8rem;
+    }
+
+    .preview-box .preview-content {
+      margin-top: 0.5rem;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 2px dashed #e0e6ed;
+    }
 
     /* ============================================================
        MODAL EDITOR
@@ -519,108 +532,41 @@
 
     .btn-publish { background: #27ae60; color: white; }
     .btn-publish:hover { background: #229954; }
-
     .btn-draft { background: #f39c12; color: white; }
     .btn-draft:hover { background: #d68910; }
-
     .btn-cancel { background: #e74c3c; color: white; }
     .btn-cancel:hover { background: #c0392b; }
 
-    /* ============================================================
-       SETTINGS - GRID
-    ============================================================ */
-    .settings-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      background: #f8f9fa;
-      padding: 1.5rem;
-      border-radius: 1rem;
-    }
-
-    .settings-grid .full-width {
-      grid-column: 1 / -1;
-    }
-
-    .settings-grid .form-group {
+    .user-item {
       display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-
-    .settings-grid .form-group label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #4a5b6e;
-    }
-
-    .settings-grid .form-group input,
-    .settings-grid .form-group select {
-      padding: 0.6rem 0.8rem;
-      border: 2px solid #e0e6ed;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
-
-    .settings-grid .form-group input:focus,
-    .settings-grid .form-group select:focus {
-      border-color: #3498db;
-      outline: none;
-    }
-
-    .settings-grid .form-group .color-input-group {
-      display: flex;
+      justify-content: space-between;
       align-items: center;
+      padding: 0.8rem;
+      border-bottom: 1px solid #eef2f7;
+      flex-wrap: wrap;
       gap: 0.5rem;
     }
 
-    .settings-grid .form-group .color-input-group input[type="color"] {
-      width: 50px;
-      height: 40px;
-      border: 2px solid #e0e6ed;
-      border-radius: 6px;
-      padding: 2px;
-      cursor: pointer;
+    .user-item .user-role {
+      background: #3498db;
+      color: white;
+      padding: 0.1rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      margin-left: 0.5rem;
     }
 
-    .settings-grid .form-group .color-input-group input[type="text"] {
-      flex: 1;
-    }
-
-    .settings-grid .btn-save-settings {
-      grid-column: 1 / -1;
-      padding: 0.8rem;
-      background: #27ae60;
+    .user-item .btn-delete-user {
+      background: #e74c3c;
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: 600;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
       cursor: pointer;
-      transition: 0.2s;
     }
 
-    .settings-grid .btn-save-settings:hover { background: #229954; }
+    .user-item .btn-delete-user:hover { background: #c0392b; }
 
-    /* PREVIEW */
-    .preview-box {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: #f8f9fa;
-      border-radius: 0.8rem;
-    }
-
-    .preview-box .preview-content {
-      margin-top: 0.5rem;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      border: 2px dashed #e0e6ed;
-    }
-
-    /* ============================================================
-       RESPONSIVIDADE
-    ============================================================ */
     @media (max-width: 768px) {
       .settings-grid {
         grid-template-columns: 1fr;
@@ -795,7 +741,7 @@
       <button type="submit" class="btn-save-settings"><i class="fas fa-save"></i> Salvar Personalização</button>
     </form>
 
-    <!-- Preview ao vivo -->
+    <!-- Preview -->
     <div class="preview-box">
       <h4><i class="fas fa-eye"></i> Preview ao vivo</h4>
       <div class="preview-content" id="livePreview">
@@ -896,15 +842,13 @@
   ============================================================ -->
   <div class="admin-panel" id="panel-history">
     <h3><i class="fas fa-history"></i> Histórico de Alterações</h3>
-    <div id="historyListAdmin">
-      <!-- Preenchido via JS -->
-    </div>
+    <div id="historyListAdmin"></div>
   </div>
 
 </div>
 
 <!-- ============================================================
-   MODAL EDITOR DE MATÉRIA
+   MODAL EDITOR
 ============================================================ -->
 <div class="modal-overlay" id="editorModal">
   <div class="modal-box">
@@ -949,7 +893,7 @@
 <script src="data/database.js"></script>
 <script>
   // ============================================================
-  // ADMIN - JAVASCRIPT COMPLETO
+  // ADMIN - JAVASCRIPT
   // ============================================================
 
   if (typeof DB === 'undefined') {
@@ -960,9 +904,6 @@
 
   let editingMateriaId = null;
 
-  // ============================================================
-  // UTILITÁRIOS
-  // ============================================================
   function formatDate(dateStr) {
     const date = new Date(dateStr);
     return date.toLocaleString('pt-BR', {
@@ -973,9 +914,6 @@
     });
   }
 
-  // ============================================================
-  // TABS
-  // ============================================================
   function switchTab(tab) {
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active'));
@@ -991,9 +929,6 @@
     if (tab === 'history') renderHistory();
   }
 
-  // ============================================================
-  // DASHBOARD
-  // ============================================================
   function updateDashboard() {
     const materias = DB.getAllMaterias();
     const published = materias.filter(m => m.status === 'published');
@@ -1015,7 +950,7 @@
           </div>
         </div>
         <div class="materia-actions">
-          <button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i> Editar</button>
+          <button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i></button>
         </div>
       </div>
     `).join('');
@@ -1059,7 +994,6 @@
     document.getElementById('previewButton2').style.background = secondary;
   }
 
-  // Sincronizar cores
   document.querySelectorAll('input[type="color"]').forEach(input => {
     input.addEventListener('input', function() {
       const textInput = document.getElementById(this.id + 'Text');
@@ -1383,9 +1317,6 @@
     `).join('');
   }
 
-  // ============================================================
-  // LOGOUT
-  // ============================================================
   function logout() {
     if (confirm('Deseja sair do painel administrativo?')) {
       window.location.href = 'index.html';
@@ -1409,8 +1340,8 @@
     renderHistory();
 
     console.log('🔐 Painel Admin carregado!');
-    console.log('📂 Categorias:', DB.getCategories().length);
-    console.log('📄 Matérias:', DB.getAllMaterias().length);
+    console.log(`📂 ${DB.getCategories().length} categorias`);
+    console.log(`📄 ${DB.getAllMaterias().length} matérias`);
   });
 
 </script>
