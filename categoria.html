@@ -228,6 +228,13 @@
       font-size: 2.8rem;
       position: relative;
       transition: background 0.3s;
+      overflow: hidden;
+    }
+
+    .destaque-principal .card-img a {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
     .destaque-principal .card-img img {
@@ -256,6 +263,15 @@
       margin-bottom: 0.7rem;
       text-transform: uppercase;
       transition: background 0.3s;
+    }
+
+    .destaque-principal h2 a {
+      color: inherit;
+      transition: color 0.3s;
+    }
+
+    .destaque-principal h2 a:hover {
+      color: #d32f2f;
     }
 
     .destaque-principal h2 {
@@ -349,13 +365,24 @@
       transition: background 0.3s;
     }
 
+    .sidebar-news a {
+      display: block;
+      color: inherit;
+    }
+
     .sidebar-news .side-item {
       display: flex;
       gap: 1rem;
       padding: 1rem 0.2rem;
       border-bottom: 1px solid #eceff5;
       align-items: flex-start;
-      transition: border-color 0.3s;
+      transition: all 0.3s;
+    }
+
+    .sidebar-news .side-item:hover {
+      background: #f0f3f8;
+      border-radius: 0.8rem;
+      padding: 1rem 0.8rem;
     }
 
     .sidebar-news .side-item:last-child {
@@ -445,6 +472,11 @@
       transform: translateY(-4px);
       box-shadow: 0 12px 24px rgba(0,0,0,0.06);
       border-color: #dce4f0;
+    }
+
+    .news-card a {
+      display: block;
+      color: inherit;
     }
 
     .news-card .card-img {
@@ -747,7 +779,7 @@
   <script src="data/database.js"></script>
   <script>
     // ============================================================
-    // CATEGORIA DINÂMICA - LIDA COM TODAS AS CATEGORIAS
+    // CATEGORIA DINÂMICA - COM LINKS PARA NOTÍCIAS
     // ============================================================
     (function() {
       'use strict';
@@ -766,7 +798,6 @@
       const slug = path.split('/').pop().replace('.html', '');
       console.log(`🔍 Categoria solicitada: ${slug}`);
 
-      // Buscar categoria pelo slug
       const category = DB.getCategoryBySlug(slug);
 
       // ============================================================
@@ -857,7 +888,7 @@
       }
 
       // ============================================================
-      // RENDERIZAR CONTEÚDO DA CATEGORIA
+      // RENDERIZAR CONTEÚDO DA CATEGORIA (COM LINKS)
       // ============================================================
       function renderCategoryContent() {
         const titleEl = document.getElementById('categoryTitle');
@@ -904,17 +935,17 @@
           return;
         }
 
-        // Destaque
+        // Destaque (COM LINK)
         const top = materias[0];
         const imgEl = document.getElementById('destaqueImg');
         if (top.image) {
-          imgEl.innerHTML = `<img src="${top.image}" alt="${top.title}">`;
+          imgEl.innerHTML = `<a href="noticia.html?id=${top.id}"><img src="${top.image}" alt="${top.title}"></a>`;
         } else {
-          imgEl.innerHTML = `<i class="fas ${getCategoryIcon(category.icon)}" style="font-size:3.2rem;"></i>`;
+          imgEl.innerHTML = `<a href="noticia.html?id=${top.id}"><i class="fas ${getCategoryIcon(category.icon)}" style="font-size:3.2rem;"></i></a>`;
         }
 
         document.getElementById('destaqueCategoria').innerHTML = `<i class="fas fa-bolt" style="margin-right:4px;"></i> ${top.category}`;
-        document.getElementById('destaqueTitulo').textContent = top.title;
+        document.getElementById('destaqueTitulo').innerHTML = `<a href="noticia.html?id=${top.id}" style="color:inherit;">${top.title}</a>`;
 
         const cleanContent = stripHtml(top.content);
         document.getElementById('destaqueResumo').textContent = cleanContent.substring(0, 180) + (cleanContent.length > 180 ? '...' : '');
@@ -923,15 +954,15 @@
         document.getElementById('destaqueAutor').textContent = top.author || 'NewsPortal';
         document.getElementById('destaqueViews').textContent = top.views || 0;
 
-        // Sidebar
+        // Sidebar (COM LINK)
         renderSidebar(materias);
 
-        // Lista de matérias
+        // Lista de matérias (COM LINK)
         renderMateriasList(materias);
       }
 
       // ============================================================
-      // RENDERIZAR SIDEBAR
+      // RENDERIZAR SIDEBAR (COM LINK)
       // ============================================================
       function renderSidebar(materias) {
         const sidebar = document.getElementById('sidebarNews');
@@ -953,24 +984,26 @@
           const cat = DB.categories.find(c => c.name === m.category);
           const icon = cat ? getCategoryIcon(cat.icon) : 'fa-tag';
           return `
-            <div class="side-item">
-              <div class="side-thumb">
-                ${m.image ? `<img src="${m.image}" alt="${m.title}">` : `<i class="fas ${icon}"></i>`}
-              </div>
-              <div class="side-text">
-                <h4>${m.title}</h4>
-                <div class="side-meta">
-                  <i class="far fa-clock"></i> ${formatDate(m.date)}
-                  <span style="margin-left:0.5rem;"><i class="far fa-eye"></i> ${m.views || 0}</span>
+            <a href="noticia.html?id=${m.id}" style="color:inherit; display:block;">
+              <div class="side-item">
+                <div class="side-thumb">
+                  ${m.image ? `<img src="${m.image}" alt="${m.title}">` : `<i class="fas ${icon}"></i>`}
+                </div>
+                <div class="side-text">
+                  <h4>${m.title}</h4>
+                  <div class="side-meta">
+                    <i class="far fa-clock"></i> ${formatDate(m.date)}
+                    <span style="margin-left:0.5rem;"><i class="far fa-eye"></i> ${m.views || 0}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </a>
           `;
         }).join('');
       }
 
       // ============================================================
-      // RENDERIZAR MATÉRIAS
+      // RENDERIZAR MATÉRIAS (COM LINK)
       // ============================================================
       function renderMateriasList(materias) {
         const list = document.getElementById('materiasList');
@@ -993,17 +1026,19 @@
           const icon = cat ? getCategoryIcon(cat.icon) : 'fa-tag';
           return `
             <div class="news-card" data-id="${m.id}">
-              <div class="card-img">
-                ${m.image ? `<img src="${m.image}" alt="${m.title}">` : `<i class="fas ${icon}"></i>`}
-              </div>
-              <div class="card-content">
-                <span class="tag">${m.category}</span>
-                <h4>${m.title}</h4>
-                <div class="mini-meta">
-                  <i class="far fa-clock"></i> ${formatDate(m.date)}
-                  <span style="margin-left:0.5rem;"><i class="far fa-eye"></i> ${m.views || 0}</span>
+              <a href="noticia.html?id=${m.id}" style="display:block; color:inherit;">
+                <div class="card-img">
+                  ${m.image ? `<img src="${m.image}" alt="${m.title}">` : `<i class="fas ${icon}"></i>`}
                 </div>
-              </div>
+                <div class="card-content">
+                  <span class="tag">${m.category}</span>
+                  <h4>${m.title}</h4>
+                  <div class="mini-meta">
+                    <i class="far fa-clock"></i> ${formatDate(m.date)}
+                    <span style="margin-left:0.5rem;"><i class="far fa-eye"></i> ${m.views || 0}</span>
+                  </div>
+                </div>
+              </a>
             </div>
           `;
         }).join('');
@@ -1015,6 +1050,34 @@
       function updateTime() {
         const now = new Date();
         document.getElementById('updateTime').textContent = now.toLocaleTimeString('pt-BR');
+      }
+
+      // ============================================================
+      // BUSCA
+      // ============================================================
+      function setupSearch() {
+        const input = document.getElementById('searchInput');
+        if (!input) return;
+
+        input.addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') {
+            const term = input.value.trim().toLowerCase();
+            if (!term) return;
+
+            const materias = DB.getMaterias();
+            const results = materias.filter(m =>
+              m.title.toLowerCase().includes(term) ||
+              stripHtml(m.content).toLowerCase().includes(term)
+            );
+
+            if (results.length === 0) {
+              alert(`🔍 Nenhum resultado encontrado para "${term}"`);
+              return;
+            }
+
+            alert(`🔍 Resultados para "${term}":\n\n${results.map(m => `📰 ${m.title} (${m.category})`).join('\n')}`);
+          }
+        });
       }
 
       // ============================================================
@@ -1048,34 +1111,6 @@
       }
 
       // ============================================================
-      // BUSCA
-      // ============================================================
-      function setupSearch() {
-        const input = document.getElementById('searchInput');
-        if (!input) return;
-
-        input.addEventListener('keyup', (e) => {
-          if (e.key === 'Enter') {
-            const term = input.value.trim().toLowerCase();
-            if (!term) return;
-
-            const materias = DB.getMaterias();
-            const results = materias.filter(m =>
-              m.title.toLowerCase().includes(term) ||
-              stripHtml(m.content).toLowerCase().includes(term)
-            );
-
-            if (results.length === 0) {
-              alert(`🔍 Nenhum resultado encontrado para "${term}"`);
-              return;
-            }
-
-            alert(`🔍 Resultados para "${term}":\n\n${results.map(m => `📰 ${m.title} (${m.category})`).join('\n')}`);
-          }
-        });
-      }
-
-      // ============================================================
       // INICIALIZAÇÃO
       // ============================================================
       document.addEventListener('DOMContentLoaded', function() {
@@ -1089,6 +1124,7 @@
         console.log(`📰 Página da categoria: ${category ? category.name : 'Não encontrada'}`);
         console.log(`📄 ${category ? DB.getMaterias(category.slug).length : 0} matérias`);
         console.log('🔑 Pressione Ctrl para acessar o painel admin');
+        console.log('🔗 Clique em qualquer matéria para ler a notícia completa');
       });
 
     })();
