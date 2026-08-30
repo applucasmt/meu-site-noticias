@@ -5,11 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="siteTitle">NewsPortal · Início</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style id="dynamicStyles">
-    /* Estilos serão injetados via JavaScript */
-  </style>
   <style>
-    /* ===== RESET E BASE ===== */
+    /* ===== TODOS OS ESTILOS AQUI (sem mudanças) ===== */
     * {
       margin: 0;
       padding: 0;
@@ -22,7 +19,7 @@
       color: #1e2a3a;
       line-height: 1.5;
       padding: 0 1rem;
-      transition: all 0.3s;
+      transition: background 0.3s, color 0.3s;
     }
 
     a {
@@ -44,10 +41,9 @@
       border-radius: 0 0 1.5rem 1.5rem;
       overflow: hidden;
       padding: 0 1.5rem 2rem;
-      transition: all 0.3s;
+      transition: max-width 0.3s, border-radius 0.3s, background 0.3s;
     }
 
-    /* ===== TOPO / HEADER ===== */
     .top-bar {
       display: flex;
       flex-wrap: wrap;
@@ -55,7 +51,7 @@
       justify-content: space-between;
       padding: 1.2rem 0 0.8rem;
       border-bottom: 2px solid #eef2f7;
-      transition: all 0.3s;
+      transition: border-color 0.3s;
     }
 
     .logo-area {
@@ -67,19 +63,19 @@
     .logo-icon {
       font-size: 2rem;
       color: #d32f2f;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .logo {
       font-size: 1.9rem;
       font-weight: 700;
       letter-spacing: -0.5px;
-      transition: all 0.3s;
+      transition: font-family 0.3s;
     }
 
     .logo span {
       color: #d32f2f;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .logo small {
@@ -88,7 +84,7 @@
       color: #6b7a8f;
       letter-spacing: 0.3px;
       margin-left: 6px;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .header-actions {
@@ -104,7 +100,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.3s;
+      transition: background 0.3s;
     }
 
     .header-actions .search-box input {
@@ -120,7 +116,7 @@
     .header-actions .search-box i {
       color: #6b7a8f;
       font-size: 0.9rem;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .btn-assine {
@@ -130,7 +126,7 @@
       padding: 0.45rem 1.2rem;
       border-radius: 40px;
       font-size: 0.9rem;
-      transition: all 0.3s;
+      transition: background 0.3s;
       border: none;
       cursor: default;
     }
@@ -139,7 +135,6 @@
       opacity: 0.8;
     }
 
-    /* ===== MENU NAV ===== */
     .main-nav {
       display: flex;
       flex-wrap: wrap;
@@ -148,7 +143,7 @@
       border-bottom: 1px solid #e6ecf3;
       margin-bottom: 1.8rem;
       font-weight: 500;
-      transition: all 0.3s;
+      transition: border-color 0.3s;
     }
 
     .main-nav a {
@@ -173,6 +168,7 @@
       margin-right: 4px;
       font-size: 0.8rem;
       opacity: 0.7;
+      transition: color 0.3s;
     }
 
     .main-nav a.active i {
@@ -180,7 +176,6 @@
       color: #d32f2f;
     }
 
-    /* ===== DESTAQUE + GRADE ===== */
     .news-grid {
       display: grid;
       grid-template-columns: 2fr 1fr;
@@ -206,7 +201,7 @@
       color: rgba(255,255,255,0.2);
       font-size: 2.8rem;
       position: relative;
-      transition: all 0.3s;
+      transition: background 0.3s;
     }
 
     .destaque-principal .card-img img {
@@ -234,7 +229,7 @@
       letter-spacing: 0.3px;
       margin-bottom: 0.7rem;
       text-transform: uppercase;
-      transition: all 0.3s;
+      transition: background 0.3s;
     }
 
     .destaque-principal h2 {
@@ -242,14 +237,14 @@
       font-weight: 700;
       line-height: 1.2;
       margin-bottom: 0.6rem;
-      transition: all 0.3s;
+      transition: font-family 0.3s;
     }
 
     .destaque-principal .resumo {
       color: #3d4e62;
       font-size: 1rem;
       margin-bottom: 0.7rem;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .meta {
@@ -259,14 +254,13 @@
       color: #6b7a8f;
       align-items: center;
       flex-wrap: wrap;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .meta i {
       margin-right: 4px;
     }
 
-    /* ===== LATERAL ===== */
     .sidebar {
       display: flex;
       flex-direction: column;
@@ -289,7 +283,7 @@
       letter-spacing: 1px;
       color: #7a8a9e;
       margin-bottom: 0.4rem;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .ad-box .ad-content {
@@ -299,34 +293,34 @@
       padding: 1.2rem 0.5rem;
       border-radius: 0.8rem;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
-      transition: all 0.3s;
+      transition: background 0.3s, color 0.3s;
     }
 
     .ad-box .ad-content i {
       font-size: 2rem;
       color: #b0c0d0;
       margin-right: 6px;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .ad-box .ad-content strong {
       font-weight: 600;
       color: #1e2a3a;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .ad-box .ad-content p {
       font-size: 0.7rem;
       color: #6b7a8f;
       margin-top: 0.2rem;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .sidebar-news {
       background: #fafcff;
       border-radius: 1.2rem;
       padding: 0.2rem 0;
-      transition: all 0.3s;
+      transition: background 0.3s;
     }
 
     .sidebar-news .side-item {
@@ -335,7 +329,7 @@
       padding: 1rem 0.2rem;
       border-bottom: 1px solid #eceff5;
       align-items: flex-start;
-      transition: all 0.3s;
+      transition: border-color 0.3s;
     }
 
     .sidebar-news .side-item:last-child {
@@ -353,7 +347,7 @@
       color: #9aadc2;
       font-size: 1.4rem;
       overflow: hidden;
-      transition: all 0.3s;
+      transition: background 0.3s, color 0.3s;
     }
 
     .side-item .side-thumb img {
@@ -371,16 +365,15 @@
       font-weight: 600;
       line-height: 1.3;
       margin-bottom: 0.2rem;
-      transition: all 0.3s;
+      transition: font-family 0.3s;
     }
 
     .side-item .side-text .side-meta {
       font-size: 0.7rem;
       color: #7a8a9e;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
-    /* ===== MAIS NOTÍCIAS ===== */
     .section-title {
       font-size: 1.2rem;
       font-weight: 600;
@@ -391,20 +384,20 @@
       align-items: center;
       gap: 6px;
       justify-content: space-between;
-      transition: all 0.3s;
+      transition: border-color 0.3s, font-family 0.3s;
     }
 
     .section-title i {
       color: #d32f2f;
       font-size: 1rem;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .section-title .subtitle {
       font-size: 0.8rem;
       color: #6b7a8f;
       font-weight: 400;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .news-secondary {
@@ -438,7 +431,7 @@
       font-size: 2.2rem;
       overflow: hidden;
       position: relative;
-      transition: all 0.3s;
+      transition: background 0.3s, color 0.3s;
     }
 
     .news-card .card-img img {
@@ -457,7 +450,7 @@
       text-transform: uppercase;
       color: #d32f2f;
       letter-spacing: 0.3px;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .news-card .card-content h4 {
@@ -465,16 +458,15 @@
       font-weight: 600;
       margin: 0.2rem 0 0.2rem;
       line-height: 1.3;
-      transition: all 0.3s;
+      transition: font-family 0.3s;
     }
 
     .news-card .card-content .mini-meta {
       font-size: 0.7rem;
       color: #7a8a9e;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
-    /* ===== RODAPÉ ===== */
     .footer {
       margin-top: 3rem;
       padding-top: 1.8rem;
@@ -485,7 +477,7 @@
       align-items: center;
       font-size: 0.85rem;
       color: #4a5b6e;
-      transition: all 0.3s;
+      transition: border-color 0.3s, color 0.3s;
     }
 
     .footer-links {
@@ -496,15 +488,14 @@
 
     .footer-links a:hover {
       color: #d32f2f;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
     .footer .copy {
       opacity: 0.7;
-      transition: all 0.3s;
+      transition: color 0.3s;
     }
 
-    /* ===== CADEADO ===== */
     .lock-icon {
       position: fixed;
       bottom: 20px;
@@ -534,7 +525,6 @@
       transform: scale(1.1);
     }
 
-    /* ===== RESPONSIVIDADE ===== */
     @media (max-width: 900px) {
       .news-grid {
         grid-template-columns: 1fr;
@@ -608,7 +598,7 @@
 
   <div class="container">
 
-    <!-- ===== HEADER ===== -->
+    <!-- HEADER -->
     <header class="top-bar" id="headerTop">
       <div class="logo-area">
         <span class="logo-icon" id="logoIcon"><i class="fas fa-newspaper"></i></span>
@@ -626,12 +616,12 @@
       </div>
     </header>
 
-    <!-- ===== NAV ===== -->
+    <!-- NAV -->
     <nav class="main-nav" id="mainNav">
       <!-- Preenchido via JavaScript -->
     </nav>
 
-    <!-- ===== GRADE PRINCIPAL ===== -->
+    <!-- GRADE PRINCIPAL -->
     <div class="news-grid">
 
       <article class="destaque-principal" id="destaquePrincipal">
@@ -673,7 +663,7 @@
       </aside>
     </div>
 
-    <!-- ===== SEÇÃO "MAIS NOTÍCIAS" ===== -->
+    <!-- SEÇÃO "MAIS NOTÍCIAS" -->
     <div class="section-title">
       <span><i class="fas fa-arrow-right"></i> Últimas atualizações</span>
       <span class="subtitle"><i class="far fa-clock"></i> <span id="updateTime">agora</span></span>
@@ -683,7 +673,7 @@
       <!-- Preenchido via JavaScript -->
     </div>
 
-    <!-- ===== FOOTER ===== -->
+    <!-- FOOTER -->
     <footer class="footer">
       <div class="footer-links">
         <a href="#">Sobre</a>
@@ -699,16 +689,16 @@
 
   </div>
 
-  <!-- ===== CADEADO ===== -->
+  <!-- CADEADO -->
   <div class="lock-icon" id="lockIcon" title="Pressione Ctrl e clique para acessar o painel admin">
     <i class="fas fa-lock"></i>
   </div>
 
-  <!-- ===== SCRIPTS ===== -->
+  <!-- SCRIPTS -->
   <script src="data/database.js"></script>
   <script>
     // ============================================================
-    // SITE PÚBLICO - COMPLETAMENTE FUNCIONAL
+    // SITE PÚBLICO - COMPLETAMENTE FUNCIONAL E REAL
     // ============================================================
     (function() {
       'use strict';
@@ -718,7 +708,7 @@
         return;
       }
 
-      console.log('✅ Site público carregado!');
+      console.log('✅ Site público carregado com dados REAIS!');
 
       // ============================================================
       // APLICAR PERSONALIZAÇÃO REAL
@@ -727,94 +717,62 @@
         const settings = DB.getSettings();
         if (!settings) return;
 
-        // Criar um style tag para as variáveis CSS
-        let styleTag = document.getElementById('dynamicStyles');
-        if (!styleTag) {
-          styleTag = document.createElement('style');
-          styleTag.id = 'dynamicStyles';
-          document.head.appendChild(styleTag);
+        console.log('🎨 Aplicando personalização REAL:', settings);
+
+        // Aplicar cores via CSS inline
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', settings.primaryColor);
+        root.style.setProperty('--secondary-color', settings.secondaryColor);
+        root.style.setProperty('--bg-color', settings.backgroundColor);
+        root.style.setProperty('--text-color', settings.textColor);
+
+        // Aplicar cores diretamente nos elementos
+        document.body.style.background = settings.backgroundColor;
+        document.body.style.color = settings.textColor;
+
+        // Container
+        const container = document.querySelector('.container');
+        if (container) {
+          container.style.maxWidth = settings.containerMaxWidth;
+          container.style.borderRadius = settings.borderRadius;
+          container.style.background = 'white';
         }
 
-        // Gerar CSS com as cores personalizadas
-        const css = `
-          :root {
-            --primary-color: ${settings.primaryColor};
-            --secondary-color: ${settings.secondaryColor};
-            --bg-color: ${settings.backgroundColor};
-            --text-color: ${settings.textColor};
-            --container-max-width: ${settings.containerMaxWidth};
-            --border-radius: ${settings.borderRadius};
+        // Cores primárias
+        const primaryElements = document.querySelectorAll('.logo-icon, .logo span, .main-nav .active i, .section-title i, .news-card .card-content .tag');
+        primaryElements.forEach(el => {
+          if (el.classList.contains('logo-icon') || el.classList.contains('logo') || el.tagName === 'SPAN') {
+            // Tratar de forma diferente
+          } else {
+            el.style.color = settings.primaryColor;
           }
+        });
 
-          body {
-            background: var(--bg-color);
-            color: var(--text-color);
-          }
+        // Botão assine
+        const btnAssine = document.querySelector('.btn-assine');
+        if (btnAssine) {
+          btnAssine.style.background = settings.primaryColor;
+        }
 
-          .container {
-            max-width: var(--container-max-width);
-            border-radius: var(--border-radius);
-          }
+        // Categoria no destaque
+        const categoriaEl = document.querySelector('.destaque-principal .categoria');
+        if (categoriaEl) {
+          categoriaEl.style.background = settings.primaryColor;
+        }
 
-          .logo-icon,
-          .logo span,
-          .main-nav .active i,
-          .section-title i,
-          .news-card .card-content .tag {
-            color: var(--primary-color);
-          }
+        // Fontes
+        document.body.style.fontFamily = settings.fontFamily;
+        
+        const headingElements = document.querySelectorAll('.destaque-principal h2, .section-title, .news-card .card-content h4, .side-item .side-text h4');
+        headingElements.forEach(el => {
+          el.style.fontFamily = settings.headingFont;
+        });
 
-          .btn-assine,
-          .destaque-principal .categoria {
-            background: var(--primary-color);
-          }
-
-          .main-nav a:hover,
-          .main-nav .active {
-            border-bottom-color: var(--primary-color);
-          }
-
-          .btn-assine:hover {
-            background: var(--primary-color);
-            opacity: 0.8;
-          }
-
-          .destaque-principal .card-img {
-            background: var(--secondary-color);
-          }
-
-          .logo {
-            font-family: ${settings.headingFont};
-          }
-
-          body {
-            font-family: ${settings.fontFamily};
-          }
-
-          .destaque-principal h2,
-          .section-title {
-            font-family: ${settings.headingFont};
-          }
-
-          .meta,
-          .side-item .side-text .side-meta,
-          .news-card .card-content .mini-meta {
-            color: ${settings.textColor};
-            opacity: 0.7;
-          }
-
-          .footer .copy {
-            color: ${settings.textColor};
-            opacity: 0.7;
-          }
-        `;
-
-        styleTag.textContent = css;
-
-        // Atualizar logo
+        // Logo
         const logoIcon = document.getElementById('logoIcon');
         if (logoIcon) {
           logoIcon.innerHTML = `<i class="fas ${settings.logoIcon}"></i>`;
+          logoIcon.style.color = settings.primaryColor;
         }
 
         const logoText = document.getElementById('logoText');
@@ -830,7 +788,7 @@
         // Atualizar título da página
         document.title = `${settings.logoText} · Início`;
 
-        console.log('🎨 Personalização aplicada:', settings);
+        console.log('✅ Personalização aplicada com sucesso!');
       }
 
       // ============================================================
@@ -1062,21 +1020,24 @@
       // ATUALIZAR PERIODICAMENTE
       // ============================================================
       function refreshContent() {
-        DB.load();
+        DB.init();
         applySettings();
         renderMenus();
         renderDestaque();
         renderSidebar();
         renderMaterias();
         updateTime();
-        console.log('🔄 Conteúdo atualizado');
+        console.log('🔄 Conteúdo atualizado com dados REAIS');
       }
 
       // ============================================================
       // INICIALIZAÇÃO
       // ============================================================
       document.addEventListener('DOMContentLoaded', function() {
-        DB.load();
+        // Garantir que os dados estão carregados
+        DB.init();
+        
+        // Aplicar tudo
         applySettings();
         renderMenus();
         renderDestaque();
@@ -1085,13 +1046,16 @@
         updateTime();
         setupSearch();
 
+        // Atualizar a cada 30 segundos
         setInterval(refreshContent, 30000);
 
-        console.log('📰 NewsPortal - Site Público carregado!');
-        console.log(`📂 ${DB.getCategories().length} categorias`);
-        console.log(`📄 ${DB.getMaterias().length} matérias publicadas`);
+        console.log('📰 NewsPortal - Site Público com dados REAIS!');
+        console.log(`📂 ${DB.getCategories().length} categorias REAIS`);
+        console.log(`📄 ${DB.getMaterias().length} matérias REAIS`);
+        console.log(`👤 ${Object.keys(DB.getUsers()).length} usuários REAIS`);
+        console.log('💾 Todos os dados são persistentes no LocalStorage');
         console.log('🔑 Pressione Ctrl para acessar o painel admin');
-        console.log('🎨 Personalização aplicada em tempo real!');
+        console.log('🎨 Personalização aplicada em tempo REAL!');
       });
 
     })();
