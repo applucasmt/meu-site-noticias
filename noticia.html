@@ -603,7 +603,6 @@
         const container = document.getElementById('noticiaContainer');
         if (!container) return;
 
-        // Buscar a notícia pelo ID
         const materia = DB.materias.find(m => m.id === noticiaId);
 
         if (!materia || materia.status !== 'published') {
@@ -621,14 +620,11 @@
           return;
         }
 
-        // Atualizar título da página
         document.title = `NewsPortal · ${materia.title}`;
 
-        // Encontrar a categoria
         const cat = DB.categories.find(c => c.name === materia.category);
         const icon = cat ? (cat.icon || 'fa-tag') : 'fa-tag';
 
-        // Formatar data
         const date = new Date(materia.date);
         const dataFormatada = date.toLocaleString('pt-BR', {
           day: '2-digit',
@@ -638,10 +634,8 @@
           minute: '2-digit'
         });
 
-        // URL para compartilhamento
         const shareUrl = window.location.href;
 
-        // Construir HTML
         let html = `
           <div class="noticia-header">
             <span class="categoria"><i class="fas ${icon}" style="margin-right:4px;"></i> ${materia.category}</span>
@@ -654,7 +648,6 @@
           </div>
         `;
 
-        // Imagem
         if (materia.image) {
           html += `
             <div class="noticia-img">
@@ -671,7 +664,6 @@
           `;
         }
 
-        // Conteúdo
         html += `
           <div class="noticia-content">
             ${materia.content}
@@ -697,7 +689,6 @@
 
         container.innerHTML = html;
 
-        // Incrementar visualizações
         materia.views = (materia.views || 0) + 1;
         DB.save();
         console.log(`👁️ Visualizações: ${materia.views}`);
