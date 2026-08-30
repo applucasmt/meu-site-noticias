@@ -6,7 +6,6 @@
   <title id="pageTitle">NewsPortal · Categoria</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* ===== TODOS OS ESTILOS (mesmos do index) ===== */
     * {
       margin: 0;
       padding: 0;
@@ -673,7 +672,6 @@
 
   <div class="container">
 
-    <!-- HEADER -->
     <header class="top-bar" id="headerTop">
       <div class="logo-area">
         <span class="logo-icon" id="logoIcon"><i class="fas fa-newspaper"></i></span>
@@ -691,18 +689,15 @@
       </div>
     </header>
 
-    <!-- NAV -->
     <nav class="main-nav" id="mainNav">
       <!-- Preenchido via JavaScript -->
     </nav>
 
-    <!-- PAGE HEADER -->
     <div class="page-header">
       <h1 id="categoryTitle"><i class="fas fa-tag"></i> Categoria</h1>
       <p id="categoryDesc">Carregando matérias...</p>
     </div>
 
-    <!-- GRADE PRINCIPAL -->
     <div class="news-grid">
 
       <article class="destaque-principal" id="destaquePrincipal">
@@ -744,7 +739,6 @@
       </aside>
     </div>
 
-    <!-- SEÇÃO "MAIS NOTÍCIAS" -->
     <div class="section-title">
       <span><i class="fas fa-arrow-right"></i> Mais notícias</span>
       <span class="subtitle"><i class="far fa-clock"></i> <span id="updateTime">agora</span></span>
@@ -754,7 +748,6 @@
       <!-- Preenchido via JavaScript -->
     </div>
 
-    <!-- FOOTER -->
     <footer class="footer">
       <div class="footer-links">
         <a href="#">Sobre</a>
@@ -770,17 +763,12 @@
 
   </div>
 
-  <!-- CADEADO -->
   <div class="lock-icon" id="lockIcon" title="Pressione Ctrl e clique para acessar o painel admin">
     <i class="fas fa-lock"></i>
   </div>
 
-  <!-- SCRIPTS -->
   <script src="data/database.js"></script>
   <script>
-    // ============================================================
-    // CATEGORIA DINÂMICA - COM LINKS PARA NOTÍCIAS
-    // ============================================================
     (function() {
       'use strict';
 
@@ -791,18 +779,12 @@
 
       console.log('✅ Página de categoria carregada!');
 
-      // ============================================================
-      // DETECTAR CATEGORIA PELA URL
-      // ============================================================
       const path = window.location.pathname;
       const slug = path.split('/').pop().replace('.html', '');
       console.log(`🔍 Categoria solicitada: ${slug}`);
 
       const category = DB.getCategoryBySlug(slug);
 
-      // ============================================================
-      // APLICAR PERSONALIZAÇÃO
-      // ============================================================
       function applySettings() {
         const settings = DB.getSettings();
         if (!settings) return;
@@ -842,9 +824,6 @@
         document.title = `${settings.logoText} · ${category ? category.name : 'Categoria'}`;
       }
 
-      // ============================================================
-      // UTILITÁRIOS
-      // ============================================================
       function formatDate(dateStr) {
         const date = new Date(dateStr);
         return date.toLocaleString('pt-BR', {
@@ -865,9 +844,6 @@
         return icon || 'fa-tag';
       }
 
-      // ============================================================
-      // RENDERIZAR MENUS
-      // ============================================================
       function renderMenus() {
         const nav = document.getElementById('mainNav');
         if (!nav) return;
@@ -887,9 +863,6 @@
         nav.innerHTML = html;
       }
 
-      // ============================================================
-      // RENDERIZAR CONTEÚDO DA CATEGORIA (COM LINKS)
-      // ============================================================
       function renderCategoryContent() {
         const titleEl = document.getElementById('categoryTitle');
         const descEl = document.getElementById('categoryDesc');
@@ -912,12 +885,10 @@
           return;
         }
 
-        // Atualizar título
         titleEl.innerHTML = `<i class="fas ${getCategoryIcon(category.icon)}"></i> ${category.name}`;
         descEl.textContent = `Últimas matérias de ${category.name}`;
         document.title = `NewsPortal · ${category.name}`;
 
-        // Carregar matérias da categoria
         const materias = DB.getMaterias(category.slug);
 
         if (materias.length === 0) {
@@ -935,7 +906,6 @@
           return;
         }
 
-        // Destaque (COM LINK)
         const top = materias[0];
         const imgEl = document.getElementById('destaqueImg');
         if (top.image) {
@@ -954,16 +924,10 @@
         document.getElementById('destaqueAutor').textContent = top.author || 'NewsPortal';
         document.getElementById('destaqueViews').textContent = top.views || 0;
 
-        // Sidebar (COM LINK)
         renderSidebar(materias);
-
-        // Lista de matérias (COM LINK)
         renderMateriasList(materias);
       }
 
-      // ============================================================
-      // RENDERIZAR SIDEBAR (COM LINK)
-      // ============================================================
       function renderSidebar(materias) {
         const sidebar = document.getElementById('sidebarNews');
         if (!sidebar) return;
@@ -1002,9 +966,6 @@
         }).join('');
       }
 
-      // ============================================================
-      // RENDERIZAR MATÉRIAS (COM LINK)
-      // ============================================================
       function renderMateriasList(materias) {
         const list = document.getElementById('materiasList');
         if (!list) return;
@@ -1044,17 +1005,11 @@
         }).join('');
       }
 
-      // ============================================================
-      // ATUALIZAR HORA
-      // ============================================================
       function updateTime() {
         const now = new Date();
         document.getElementById('updateTime').textContent = now.toLocaleTimeString('pt-BR');
       }
 
-      // ============================================================
-      // BUSCA
-      // ============================================================
       function setupSearch() {
         const input = document.getElementById('searchInput');
         if (!input) return;
@@ -1080,9 +1035,6 @@
         });
       }
 
-      // ============================================================
-      // CADEADO
-      // ============================================================
       let ctrlPressed = false;
       const lockIcon = document.getElementById('lockIcon');
 
@@ -1110,9 +1062,6 @@
         });
       }
 
-      // ============================================================
-      // INICIALIZAÇÃO
-      // ============================================================
       document.addEventListener('DOMContentLoaded', function() {
         DB.init();
         applySettings();
