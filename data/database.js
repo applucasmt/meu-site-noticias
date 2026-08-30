@@ -4,7 +4,7 @@
 
 const Database = {
   // ============================================================
-  // CONFIGURAÇÕES PADRÃO (NUNCA SOBRESCREVEM AS DO USUÁRIO)
+  // CONFIGURAÇÕES PADRÃO
   // ============================================================
   defaults: {
     settings: {
@@ -47,7 +47,7 @@ const Database = {
         title: 'Bolsa fecha em alta com otimismo no exterior',
         category: 'Economia',
         slug: 'bolsa-fecha-em-alta',
-        content: '<p>O Ibovespa fechou o dia em alta de 1,2% impulsionado por dados positivos dos EUA. Investidores aguardam decisões do Fed.</p>',
+        content: '<p>O Ibovespa fechou o dia em alta de 1,2% impulsionado por dados positivos dos EUA.</p>',
         image: '',
         status: 'published',
         author: 'admin',
@@ -59,7 +59,7 @@ const Database = {
         title: 'Novo chip brasileiro promete eficiência energética',
         category: 'Tecnologia',
         slug: 'novo-chip-brasileiro',
-        content: '<p>Pesquisadores da Unicamp desenvolveram um novo chip que reduz o consumo de energia em até 40%. Tecnologia utiliza materiais sustentáveis.</p>',
+        content: '<p>Pesquisadores da Unicamp desenvolveram um novo chip que reduz o consumo de energia em até 40%.</p>',
         image: '',
         status: 'published',
         author: 'admin',
@@ -76,15 +76,14 @@ const Database = {
   },
 
   // ============================================================
-  // DADOS REAIS (CARREGADOS DO LOCALSTORAGE)
+  // DADOS REAIS
   // ============================================================
   data: null,
 
   // ============================================================
-  // INICIALIZAÇÃO - CARREGA DADOS REAIS
+  // INICIALIZAÇÃO
   // ============================================================
   init() {
-    // Tentar carregar do localStorage
     const saved = localStorage.getItem('newsportal_db');
     
     if (saved) {
@@ -94,13 +93,16 @@ const Database = {
         console.log(`📂 ${this.getCategories().length} categorias`);
         console.log(`📄 ${this.getAllMaterias().length} matérias`);
         console.log(`👤 ${Object.keys(this.getUsers()).length} usuários`);
+        
+        // Verificar e corrigir matérias com categoria inválida
+        this.fixInvalidCategories();
+        
         return this;
       } catch (e) {
         console.warn('Erro ao carregar dados, usando padrão:', e);
       }
     }
 
-    // Primeira execução - criar dados padrão REAIS
     console.log('📦 Criando dados REAIS pela primeira vez');
     this.data = JSON.parse(JSON.stringify(this.defaults));
     this.save();
@@ -108,7 +110,31 @@ const Database = {
   },
 
   // ============================================================
-  // PERSISTÊNCIA REAL
+  // CORRIGIR CATEGORIAS INVÁLIDAS
+  // ============================================================
+  fixInvalidCategories() {
+    const validCategories = this.data.categories.map(c => c.name);
+    let fixed = 0;
+    
+    this.data.materias.forEach(m => {
+      if (!validCategories.includes(m.category)) {
+        console.warn(`⚠️ Matéria "${m.title}" tem categoria inválida: "${m.category}"`);
+        // Se a categoria não existe, colocar como "Política" (primeira categoria)
+        if (validCategories.length > 0) {
+          m.category = validCategories[0];
+          fixed++;
+        }
+      }
+    });
+    
+    if (fixed > 0) {
+      console.log(`✅ Corrigidas ${fixed} matérias com categoria inválida`);
+      this.save();
+    }
+  },
+
+  // ============================================================
+  // PERSISTÊNCIA
   // ============================================================
   save() {
     try {
@@ -122,7 +148,7 @@ const Database = {
   },
 
   // ============================================================
-  // GETTERS - ACESSO AOS DADOS REAIS
+  // GETTERS
   // ============================================================
   getSettings() {
     return this.data.settings;
@@ -155,6 +181,10 @@ const Database = {
     return this.data.materias.sort((a, b) => new Date(b.date) - new Date(a.date));
   },
 
+  getMateriaById(id) {
+    return this.data.materias.find(m => m.id === id);
+  },
+
   getUsers() {
     return this.data.users;
   },
@@ -164,7 +194,7 @@ const Database = {
   },
 
   // ============================================================
-  // MÉTODOS REAIS - CATEGORIAS
+  // MÉTODOS - CATEGORIAS
   // ============================================================
   addCategory(name, icon = 'fa-tag') {
     const slug = this.generateSlug(name);
@@ -220,7 +250,7 @@ const Database = {
   },
 
   // ============================================================
-  // MÉTODOS REAIS - MATÉRIAS
+  // MÉTODOS - MATÉRIAS
   // ============================================================
   addMateria(data) {
     const newMateria = {
@@ -236,7 +266,7 @@ const Database = {
       views: 0
     };
     this.data.materias.push(newMateria);
-    this.addHistory(`Publicou matéria: ${data.title}`);
+    this.addHistory(`Criou matéria: ${data.title}`);
     this.save();
     return newMateria;
   },
@@ -272,7 +302,7 @@ const Database = {
   },
 
   // ============================================================
-  // MÉTODOS REAIS - USUÁRIOS
+  // MÉTODOS - USUÁRIOS
   // ============================================================
   addUser(username, password, level, name) {
     if (this.data.users[username]) {
@@ -297,10 +327,9 @@ const Database = {
   },
 
   // ============================================================
-  // MÉTODOS REAIS - CONFIGURAÇÕES
+  // MÉTODOS - CONFIGURAÇÕES
   // ============================================================
   updateSettings(newSettings) {
-    // Atualizar apenas as configurações que foram enviadas
     Object.keys(newSettings).forEach(key => {
       if (this.data.settings[key] !== undefined) {
         this.data.settings[key] = newSettings[key];
@@ -332,14 +361,13 @@ const Database = {
       user: user || 'admin',
       time: new Date().toISOString()
     });
-    // Manter apenas os últimos 100 registros
     if (this.data.history.length > 100) {
       this.data.history = this.data.history.slice(0, 100);
     }
   },
 
   // ============================================================
-  // RESETAR PARA DADOS REAIS PADRÃO
+  // RESETAR E EXPORTAR
   // ============================================================
   resetToDefaults() {
     this.data = JSON.parse(JSON.stringify(this.defaults));
@@ -348,16 +376,10 @@ const Database = {
     return this.data;
   },
 
-  // ============================================================
-  // EXPORTAR DADOS (para backup)
-  // ============================================================
   exportData() {
     return JSON.stringify(this.data, null, 2);
   },
 
-  // ============================================================
-  // IMPORTAR DADOS (para restore)
-  // ============================================================
   importData(jsonData) {
     try {
       const parsed = JSON.parse(jsonData);
@@ -377,6 +399,20 @@ const Database = {
 // ============================================================
 const DB = Database.init();
 
+// Adicionar método de correção para debug
+DB.fixMateriaCategoria = function(id, newCategory) {
+  const materia = this.getMateriaById(id);
+  if (materia) {
+    const oldCat = materia.category;
+    materia.category = newCategory;
+    this.save();
+    console.log(`✅ Matéria "${materia.title}" movida de "${oldCat}" para "${newCategory}"`);
+    return true;
+  }
+  console.log(`⚠️ Matéria ID ${id} não encontrada`);
+  return false;
+};
+
 // Disponibilizar globalmente
 window.DB = DB;
 
@@ -384,4 +420,3 @@ console.log('📰 Database REAL inicializado com sucesso!');
 console.log(`📂 ${DB.getCategories().length} categorias ativas`);
 console.log(`📄 ${DB.getMaterias().length} matérias publicadas`);
 console.log(`👤 ${Object.keys(DB.getUsers()).length} usuários`);
-console.log('💾 Todos os dados são REAIS e persistentes no LocalStorage');
