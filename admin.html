@@ -686,6 +686,13 @@
   // ADMIN - PAINEL COMPLETO
   // ============================================================
 
+  // Verificar se o DB foi carregado
+  if (typeof DB === 'undefined') {
+    alert('❌ Erro: Banco de dados não carregado! Recarregue a página.');
+  } else {
+    console.log('✅ DB carregado com sucesso!');
+  }
+
   let editingMateriaId = null;
 
   // ============================================================
@@ -838,7 +845,6 @@
     DB.updateSettings(settings);
     alert('✅ Configurações salvas com sucesso!');
     
-    // Aplicar mudanças no site (atualizar a página ao visualizar)
     if (confirm('Deseja visualizar o site com as novas configurações?')) {
       window.location.href = 'index.html';
     }
@@ -849,7 +855,7 @@
   // ============================================================
   function renderCategories() {
     const tbody = document.getElementById('categoriesBody');
-    const categories = DB.getCategories();
+    const categories = DB.getAllCategories();
     
     tbody.innerHTML = categories.map((cat, index) => `
       <tr data-id="${cat.id}" draggable="true">
@@ -1061,7 +1067,8 @@
   // ============================================================
   function renderUsers() {
     const list = document.getElementById('usersList');
-    list.innerHTML = Object.entries(DB.users).map(([username, data]) => `
+    const users = DB.getUsers();
+    list.innerHTML = Object.entries(users).map(([username, data]) => `
       <div class="materia-item">
         <div>
           <strong>${username}</strong> (${data.name})
@@ -1087,14 +1094,12 @@
       return;
     }
 
-    if (DB.users[username]) {
+    const success = DB.addUser(username, password, level);
+    if (!success) {
       alert('Usuário já existe!');
       return;
     }
 
-    DB.users[username] = { password, level, name: username.charAt(0).toUpperCase() + username.slice(1) };
-    DB.addHistory(`Adicionou usuário: ${username} (${level})`);
-    DB.save();
     renderUsers();
     document.getElementById('userForm').reset();
     alert('✅ Usuário criado com sucesso!');
@@ -1106,9 +1111,7 @@
       return;
     }
     if (confirm(`Remover usuário "${username}"?`)) {
-      delete DB.users[username];
-      DB.addHistory(`Removeu usuário: ${username}`);
-      DB.save();
+      DB.deleteUser(username);
       renderUsers();
     }
   }
