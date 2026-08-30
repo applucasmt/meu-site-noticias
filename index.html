@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NewsPortal · Início</title>
+  <title id="siteTitle">NewsPortal · Início</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style id="dynamicStyles">
+    /* Estilos serão injetados via JavaScript */
+  </style>
   <style>
     /* ===== RESET E BASE ===== */
     * {
@@ -19,6 +22,7 @@
       color: #1e2a3a;
       line-height: 1.5;
       padding: 0 1rem;
+      transition: all 0.3s;
     }
 
     a {
@@ -40,6 +44,7 @@
       border-radius: 0 0 1.5rem 1.5rem;
       overflow: hidden;
       padding: 0 1.5rem 2rem;
+      transition: all 0.3s;
     }
 
     /* ===== TOPO / HEADER ===== */
@@ -50,6 +55,7 @@
       justify-content: space-between;
       padding: 1.2rem 0 0.8rem;
       border-bottom: 2px solid #eef2f7;
+      transition: all 0.3s;
     }
 
     .logo-area {
@@ -61,16 +67,19 @@
     .logo-icon {
       font-size: 2rem;
       color: #d32f2f;
+      transition: all 0.3s;
     }
 
     .logo {
       font-size: 1.9rem;
       font-weight: 700;
       letter-spacing: -0.5px;
+      transition: all 0.3s;
     }
 
     .logo span {
       color: #d32f2f;
+      transition: all 0.3s;
     }
 
     .logo small {
@@ -79,6 +88,7 @@
       color: #6b7a8f;
       letter-spacing: 0.3px;
       margin-left: 6px;
+      transition: all 0.3s;
     }
 
     .header-actions {
@@ -94,6 +104,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      transition: all 0.3s;
     }
 
     .header-actions .search-box input {
@@ -103,11 +114,13 @@
       font-size: 0.9rem;
       outline: none;
       width: 140px;
+      color: inherit;
     }
 
     .header-actions .search-box i {
       color: #6b7a8f;
       font-size: 0.9rem;
+      transition: all 0.3s;
     }
 
     .btn-assine {
@@ -117,13 +130,13 @@
       padding: 0.45rem 1.2rem;
       border-radius: 40px;
       font-size: 0.9rem;
-      transition: 0.2s;
+      transition: all 0.3s;
       border: none;
       cursor: default;
     }
 
     .btn-assine:hover {
-      background: #b71c1c;
+      opacity: 0.8;
     }
 
     /* ===== MENU NAV ===== */
@@ -135,6 +148,7 @@
       border-bottom: 1px solid #e6ecf3;
       margin-bottom: 1.8rem;
       font-weight: 500;
+      transition: all 0.3s;
     }
 
     .main-nav a {
@@ -142,7 +156,7 @@
       font-size: 0.95rem;
       color: #2c3e50;
       border-bottom: 3px solid transparent;
-      transition: 0.15s;
+      transition: all 0.3s;
     }
 
     .main-nav a:hover {
@@ -179,7 +193,7 @@
       border-radius: 1.2rem;
       overflow: hidden;
       box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-      transition: 0.2s;
+      transition: all 0.3s;
     }
 
     .destaque-principal .card-img {
@@ -192,6 +206,7 @@
       color: rgba(255,255,255,0.2);
       font-size: 2.8rem;
       position: relative;
+      transition: all 0.3s;
     }
 
     .destaque-principal .card-img img {
@@ -219,6 +234,7 @@
       letter-spacing: 0.3px;
       margin-bottom: 0.7rem;
       text-transform: uppercase;
+      transition: all 0.3s;
     }
 
     .destaque-principal h2 {
@@ -226,12 +242,14 @@
       font-weight: 700;
       line-height: 1.2;
       margin-bottom: 0.6rem;
+      transition: all 0.3s;
     }
 
     .destaque-principal .resumo {
       color: #3d4e62;
       font-size: 1rem;
       margin-bottom: 0.7rem;
+      transition: all 0.3s;
     }
 
     .meta {
@@ -241,20 +259,20 @@
       color: #6b7a8f;
       align-items: center;
       flex-wrap: wrap;
+      transition: all 0.3s;
     }
 
     .meta i {
       margin-right: 4px;
     }
 
-    /* ===== LATERAL (anúncios + secundárias) ===== */
+    /* ===== LATERAL ===== */
     .sidebar {
       display: flex;
       flex-direction: column;
       gap: 2rem;
     }
 
-    /* anúncio */
     .ad-box {
       background: #eef2f7;
       border-radius: 1.2rem;
@@ -262,7 +280,7 @@
       text-align: center;
       color: #3d4e62;
       border: 1px dashed #bcc9db;
-      transition: 0.2s;
+      transition: all 0.3s;
     }
 
     .ad-box .ad-label {
@@ -271,6 +289,7 @@
       letter-spacing: 1px;
       color: #7a8a9e;
       margin-bottom: 0.4rem;
+      transition: all 0.3s;
     }
 
     .ad-box .ad-content {
@@ -280,30 +299,34 @@
       padding: 1.2rem 0.5rem;
       border-radius: 0.8rem;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+      transition: all 0.3s;
     }
 
     .ad-box .ad-content i {
       font-size: 2rem;
       color: #b0c0d0;
       margin-right: 6px;
+      transition: all 0.3s;
     }
 
     .ad-box .ad-content strong {
       font-weight: 600;
       color: #1e2a3a;
+      transition: all 0.3s;
     }
 
     .ad-box .ad-content p {
       font-size: 0.7rem;
       color: #6b7a8f;
       margin-top: 0.2rem;
+      transition: all 0.3s;
     }
 
-    /* lista de notícias laterais */
     .sidebar-news {
       background: #fafcff;
       border-radius: 1.2rem;
       padding: 0.2rem 0;
+      transition: all 0.3s;
     }
 
     .sidebar-news .side-item {
@@ -312,6 +335,7 @@
       padding: 1rem 0.2rem;
       border-bottom: 1px solid #eceff5;
       align-items: flex-start;
+      transition: all 0.3s;
     }
 
     .sidebar-news .side-item:last-child {
@@ -329,6 +353,7 @@
       color: #9aadc2;
       font-size: 1.4rem;
       overflow: hidden;
+      transition: all 0.3s;
     }
 
     .side-item .side-thumb img {
@@ -346,14 +371,16 @@
       font-weight: 600;
       line-height: 1.3;
       margin-bottom: 0.2rem;
+      transition: all 0.3s;
     }
 
     .side-item .side-text .side-meta {
       font-size: 0.7rem;
       color: #7a8a9e;
+      transition: all 0.3s;
     }
 
-    /* ===== MAIS NOTÍCIAS (grid secundário) ===== */
+    /* ===== MAIS NOTÍCIAS ===== */
     .section-title {
       font-size: 1.2rem;
       font-weight: 600;
@@ -364,17 +391,20 @@
       align-items: center;
       gap: 6px;
       justify-content: space-between;
+      transition: all 0.3s;
     }
 
     .section-title i {
       color: #d32f2f;
       font-size: 1rem;
+      transition: all 0.3s;
     }
 
     .section-title .subtitle {
       font-size: 0.8rem;
       color: #6b7a8f;
       font-weight: 400;
+      transition: all 0.3s;
     }
 
     .news-secondary {
@@ -388,7 +418,7 @@
       border-radius: 1rem;
       overflow: hidden;
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-      transition: 0.2s;
+      transition: all 0.3s;
       border: 1px solid #f0f4fc;
     }
 
@@ -408,6 +438,7 @@
       font-size: 2.2rem;
       overflow: hidden;
       position: relative;
+      transition: all 0.3s;
     }
 
     .news-card .card-img img {
@@ -426,6 +457,7 @@
       text-transform: uppercase;
       color: #d32f2f;
       letter-spacing: 0.3px;
+      transition: all 0.3s;
     }
 
     .news-card .card-content h4 {
@@ -433,11 +465,13 @@
       font-weight: 600;
       margin: 0.2rem 0 0.2rem;
       line-height: 1.3;
+      transition: all 0.3s;
     }
 
     .news-card .card-content .mini-meta {
       font-size: 0.7rem;
       color: #7a8a9e;
+      transition: all 0.3s;
     }
 
     /* ===== RODAPÉ ===== */
@@ -451,6 +485,7 @@
       align-items: center;
       font-size: 0.85rem;
       color: #4a5b6e;
+      transition: all 0.3s;
     }
 
     .footer-links {
@@ -461,13 +496,15 @@
 
     .footer-links a:hover {
       color: #d32f2f;
+      transition: all 0.3s;
     }
 
     .footer .copy {
       opacity: 0.7;
+      transition: all 0.3s;
     }
 
-    /* ===== CADEADO RODAPÉ ===== */
+    /* ===== CADEADO ===== */
     .lock-icon {
       position: fixed;
       bottom: 20px;
@@ -482,7 +519,7 @@
       justify-content: center;
       cursor: pointer;
       opacity: 0;
-      transition: 0.3s;
+      transition: all 0.3s;
       z-index: 100;
       box-shadow: 0 4px 16px rgba(0,0,0,0.25);
       font-size: 1.2rem;
@@ -503,7 +540,6 @@
         grid-template-columns: 1fr;
         gap: 1.5rem;
       }
-
       .destaque-principal .card-img {
         height: 170px;
       }
@@ -521,36 +557,29 @@
         align-items: stretch;
         gap: 0.8rem;
       }
-
       .header-actions {
         flex-wrap: wrap;
         justify-content: space-between;
       }
-
       .header-actions .search-box input {
         width: 100px;
       }
-
       .main-nav {
         gap: 0.4rem 0.8rem;
         font-size: 0.85rem;
         justify-content: center;
       }
-
       .destaque-principal h2 {
         font-size: 1.4rem;
       }
-
       .news-secondary {
         grid-template-columns: 1fr 1fr;
       }
-
       .footer {
         flex-direction: column;
         gap: 0.8rem;
         text-align: center;
       }
-
       .footer-links {
         flex-wrap: wrap;
         justify-content: center;
@@ -562,15 +591,12 @@
       .news-secondary {
         grid-template-columns: 1fr;
       }
-
       .header-actions .search-box {
         width: 100%;
       }
-
       .header-actions .search-box input {
         width: 100%;
       }
-
       .btn-assine {
         width: 100%;
         text-align: center;
@@ -583,12 +609,12 @@
   <div class="container">
 
     <!-- ===== HEADER ===== -->
-    <header class="top-bar">
+    <header class="top-bar" id="headerTop">
       <div class="logo-area">
-        <span class="logo-icon"><i class="fas fa-newspaper"></i></span>
-        <div class="logo">
+        <span class="logo-icon" id="logoIcon"><i class="fas fa-newspaper"></i></span>
+        <div class="logo" id="logoText">
           News<span>Portal</span>
-          <small>· 2026</small>
+          <small id="logoSubtext">· 2026</small>
         </div>
       </div>
       <div class="header-actions">
@@ -608,7 +634,6 @@
     <!-- ===== GRADE PRINCIPAL ===== -->
     <div class="news-grid">
 
-      <!-- Destaque principal -->
       <article class="destaque-principal" id="destaquePrincipal">
         <div class="card-img" id="destaqueImg">
           <i class="fas fa-image" style="font-size: 3.2rem;"></i>
@@ -625,10 +650,7 @@
         </div>
       </article>
 
-      <!-- SIDEBAR -->
       <aside class="sidebar">
-
-        <!-- Espaço para anúncio -->
         <div class="ad-box">
           <div class="ad-label"><i class="fas fa-bullhorn"></i> PUBLICIDADE</div>
           <div class="ad-content">
@@ -637,12 +659,10 @@
           </div>
         </div>
 
-        <!-- Lista de notícias laterais -->
         <div class="sidebar-news" id="sidebarNews">
           <!-- Preenchido via JavaScript -->
         </div>
 
-        <!-- segundo anúncio (opcional) -->
         <div class="ad-box" style="margin-top: -0.2rem;">
           <div class="ad-label"><i class="fas fa-bullhorn"></i> APOIE O JORNALISMO</div>
           <div class="ad-content" style="font-size: 1rem;">
@@ -650,7 +670,6 @@
             <span style="display: block; font-size: 0.75rem; margin-top: 4px;">conteúdo de qualidade</span>
           </div>
         </div>
-
       </aside>
     </div>
 
@@ -680,7 +699,7 @@
 
   </div>
 
-  <!-- ===== CADEADO RODAPÉ (Ctrl) ===== -->
+  <!-- ===== CADEADO ===== -->
   <div class="lock-icon" id="lockIcon" title="Pressione Ctrl e clique para acessar o painel admin">
     <i class="fas fa-lock"></i>
   </div>
@@ -689,7 +708,7 @@
   <script src="data/database.js"></script>
   <script>
     // ============================================================
-    // SITE PÚBLICO - APENAS O SITE, SEM ADMIN
+    // SITE PÚBLICO - COMPLETAMENTE FUNCIONAL
     // ============================================================
     (function() {
       'use strict';
@@ -699,7 +718,120 @@
         return;
       }
 
-      console.log('✅ Site público carregado com sucesso!');
+      console.log('✅ Site público carregado!');
+
+      // ============================================================
+      // APLICAR PERSONALIZAÇÃO REAL
+      // ============================================================
+      function applySettings() {
+        const settings = DB.getSettings();
+        if (!settings) return;
+
+        // Criar um style tag para as variáveis CSS
+        let styleTag = document.getElementById('dynamicStyles');
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.id = 'dynamicStyles';
+          document.head.appendChild(styleTag);
+        }
+
+        // Gerar CSS com as cores personalizadas
+        const css = `
+          :root {
+            --primary-color: ${settings.primaryColor};
+            --secondary-color: ${settings.secondaryColor};
+            --bg-color: ${settings.backgroundColor};
+            --text-color: ${settings.textColor};
+            --container-max-width: ${settings.containerMaxWidth};
+            --border-radius: ${settings.borderRadius};
+          }
+
+          body {
+            background: var(--bg-color);
+            color: var(--text-color);
+          }
+
+          .container {
+            max-width: var(--container-max-width);
+            border-radius: var(--border-radius);
+          }
+
+          .logo-icon,
+          .logo span,
+          .main-nav .active i,
+          .section-title i,
+          .news-card .card-content .tag {
+            color: var(--primary-color);
+          }
+
+          .btn-assine,
+          .destaque-principal .categoria {
+            background: var(--primary-color);
+          }
+
+          .main-nav a:hover,
+          .main-nav .active {
+            border-bottom-color: var(--primary-color);
+          }
+
+          .btn-assine:hover {
+            background: var(--primary-color);
+            opacity: 0.8;
+          }
+
+          .destaque-principal .card-img {
+            background: var(--secondary-color);
+          }
+
+          .logo {
+            font-family: ${settings.headingFont};
+          }
+
+          body {
+            font-family: ${settings.fontFamily};
+          }
+
+          .destaque-principal h2,
+          .section-title {
+            font-family: ${settings.headingFont};
+          }
+
+          .meta,
+          .side-item .side-text .side-meta,
+          .news-card .card-content .mini-meta {
+            color: ${settings.textColor};
+            opacity: 0.7;
+          }
+
+          .footer .copy {
+            color: ${settings.textColor};
+            opacity: 0.7;
+          }
+        `;
+
+        styleTag.textContent = css;
+
+        // Atualizar logo
+        const logoIcon = document.getElementById('logoIcon');
+        if (logoIcon) {
+          logoIcon.innerHTML = `<i class="fas ${settings.logoIcon}"></i>`;
+        }
+
+        const logoText = document.getElementById('logoText');
+        if (logoText) {
+          const parts = settings.logoText.split(' ');
+          if (parts.length > 1) {
+            logoText.innerHTML = `${parts[0]} <span>${parts.slice(1).join(' ')}</span> <small id="logoSubtext">${settings.logoSubtext}</small>`;
+          } else {
+            logoText.innerHTML = `${settings.logoText} <span>${settings.logoSubtext}</span>`;
+          }
+        }
+
+        // Atualizar título da página
+        document.title = `${settings.logoText} · Início`;
+
+        console.log('🎨 Personalização aplicada:', settings);
+      }
 
       // ============================================================
       // UTILITÁRIOS
@@ -897,7 +1029,7 @@
       }
 
       // ============================================================
-      // CADEADO (Ctrl)
+      // CADEADO
       // ============================================================
       let ctrlPressed = false;
       const lockIcon = document.getElementById('lockIcon');
@@ -931,6 +1063,8 @@
       // ============================================================
       function refreshContent() {
         DB.load();
+        applySettings();
+        renderMenus();
         renderDestaque();
         renderSidebar();
         renderMaterias();
@@ -943,6 +1077,7 @@
       // ============================================================
       document.addEventListener('DOMContentLoaded', function() {
         DB.load();
+        applySettings();
         renderMenus();
         renderDestaque();
         renderSidebar();
@@ -956,6 +1091,7 @@
         console.log(`📂 ${DB.getCategories().length} categorias`);
         console.log(`📄 ${DB.getMaterias().length} matérias publicadas`);
         console.log('🔑 Pressione Ctrl para acessar o painel admin');
+        console.log('🎨 Personalização aplicada em tempo real!');
       });
 
     })();
