@@ -6,7 +6,6 @@
   <title id="siteTitle">NewsPortal · Início</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* ===== RESET E BASE ===== */
     * {
       margin: 0;
       padding: 0;
@@ -44,7 +43,6 @@
       transition: max-width 0.3s, border-radius 0.3s, background 0.3s;
     }
 
-    /* ===== TOPO / HEADER ===== */
     .top-bar {
       display: flex;
       flex-wrap: wrap;
@@ -136,7 +134,6 @@
       opacity: 0.8;
     }
 
-    /* ===== MENU NAV ===== */
     .main-nav {
       display: flex;
       flex-wrap: wrap;
@@ -178,7 +175,6 @@
       color: #d32f2f;
     }
 
-    /* ===== DESTAQUE + GRADE ===== */
     .news-grid {
       display: grid;
       grid-template-columns: 2fr 1fr;
@@ -280,7 +276,6 @@
       margin-right: 4px;
     }
 
-    /* ===== LATERAL ===== */
     .sidebar {
       display: flex;
       flex-direction: column;
@@ -405,7 +400,6 @@
       transition: color 0.3s;
     }
 
-    /* ===== MAIS NOTÍCIAS ===== */
     .section-title {
       font-size: 1.2rem;
       font-weight: 600;
@@ -504,7 +498,6 @@
       transition: color 0.3s;
     }
 
-    /* ===== RODAPÉ ===== */
     .footer {
       margin-top: 3rem;
       padding-top: 1.8rem;
@@ -534,7 +527,6 @@
       transition: color 0.3s;
     }
 
-    /* ===== CADEADO ===== */
     .lock-icon {
       position: fixed;
       bottom: 20px;
@@ -564,7 +556,6 @@
       transform: scale(1.1);
     }
 
-    /* ===== RESPONSIVIDADE ===== */
     @media (max-width: 900px) {
       .news-grid {
         grid-template-columns: 1fr;
@@ -638,7 +629,6 @@
 
   <div class="container">
 
-    <!-- ===== HEADER ===== -->
     <header class="top-bar" id="headerTop">
       <div class="logo-area">
         <span class="logo-icon" id="logoIcon"><i class="fas fa-newspaper"></i></span>
@@ -656,15 +646,12 @@
       </div>
     </header>
 
-    <!-- ===== NAV ===== -->
     <nav class="main-nav" id="mainNav">
       <!-- Preenchido via JavaScript -->
     </nav>
 
-    <!-- ===== GRADE PRINCIPAL ===== -->
     <div class="news-grid">
 
-      <!-- Destaque principal -->
       <article class="destaque-principal" id="destaquePrincipal">
         <div class="card-img" id="destaqueImg">
           <i class="fas fa-image" style="font-size: 3.2rem;"></i>
@@ -681,10 +668,8 @@
         </div>
       </article>
 
-      <!-- SIDEBAR -->
       <aside class="sidebar">
 
-        <!-- Espaço para anúncio -->
         <div class="ad-box">
           <div class="ad-label"><i class="fas fa-bullhorn"></i> PUBLICIDADE</div>
           <div class="ad-content">
@@ -693,12 +678,10 @@
           </div>
         </div>
 
-        <!-- Lista de notícias laterais -->
         <div class="sidebar-news" id="sidebarNews">
           <!-- Preenchido via JavaScript -->
         </div>
 
-        <!-- segundo anúncio (opcional) -->
         <div class="ad-box" style="margin-top: -0.2rem;">
           <div class="ad-label"><i class="fas fa-bullhorn"></i> APOIE O JORNALISMO</div>
           <div class="ad-content" style="font-size: 1rem;">
@@ -710,7 +693,6 @@
       </aside>
     </div>
 
-    <!-- ===== SEÇÃO "MAIS NOTÍCIAS" ===== -->
     <div class="section-title">
       <span><i class="fas fa-arrow-right"></i> Últimas atualizações</span>
       <span class="subtitle"><i class="far fa-clock"></i> <span id="updateTime">agora</span></span>
@@ -720,7 +702,6 @@
       <!-- Preenchido via JavaScript -->
     </div>
 
-    <!-- ===== FOOTER ===== -->
     <footer class="footer">
       <div class="footer-links">
         <a href="#">Sobre</a>
@@ -736,17 +717,12 @@
 
   </div>
 
-  <!-- ===== CADEADO ===== -->
   <div class="lock-icon" id="lockIcon" title="Pressione Ctrl e clique para acessar o painel admin">
     <i class="fas fa-lock"></i>
   </div>
 
-  <!-- ===== SCRIPTS ===== -->
   <script src="data/database.js"></script>
   <script>
-    // ============================================================
-    // SITE PÚBLICO - COMPLETO COM LINKS PARA NOTÍCIAS
-    // ============================================================
     (function() {
       'use strict';
 
@@ -755,11 +731,8 @@
         return;
       }
 
-      console.log('✅ Site público carregado com dados REAIS!');
+      console.log('✅ Site público carregado!');
 
-      // ============================================================
-      // APLICAR PERSONALIZAÇÃO
-      // ============================================================
       function applySettings() {
         const settings = DB.getSettings();
         if (!settings) return;
@@ -799,9 +772,6 @@
         document.title = `${settings.logoText} · Início`;
       }
 
-      // ============================================================
-      // UTILITÁRIOS
-      // ============================================================
       function formatDate(dateStr) {
         const date = new Date(dateStr);
         return date.toLocaleString('pt-BR', {
@@ -822,9 +792,6 @@
         return icon || 'fa-tag';
       }
 
-      // ============================================================
-      // RENDERIZAR MENUS
-      // ============================================================
       function renderMenus() {
         const nav = document.getElementById('mainNav');
         if (!nav) return;
@@ -846,9 +813,6 @@
         nav.innerHTML = html;
       }
 
-      // ============================================================
-      // RENDERIZAR DESTAQUE (COM LINK)
-      // ============================================================
       function renderDestaque() {
         const materias = DB.getMaterias();
         if (materias.length === 0) {
@@ -861,7 +825,6 @@
         const cat = DB.categories.find(c => c.name === top.category);
         const icon = cat ? getCategoryIcon(cat.icon) : 'fa-tag';
 
-        // Imagem com link
         const imgEl = document.getElementById('destaqueImg');
         if (top.image) {
           imgEl.innerHTML = `<a href="noticia.html?id=${top.id}"><img src="${top.image}" alt="${top.title}"></a>`;
@@ -869,25 +832,17 @@
           imgEl.innerHTML = `<a href="noticia.html?id=${top.id}"><i class="fas ${icon}" style="font-size:3.2rem;"></i></a>`;
         }
 
-        // Categoria
         document.getElementById('destaqueCategoria').innerHTML = `<i class="fas fa-bolt" style="margin-right:4px;"></i> ${top.category}`;
-
-        // Título com link
         document.getElementById('destaqueTitulo').innerHTML = `<a href="noticia.html?id=${top.id}" style="color:inherit;">${top.title}</a>`;
 
-        // Resumo
         const cleanContent = stripHtml(top.content);
         document.getElementById('destaqueResumo').textContent = cleanContent.substring(0, 180) + (cleanContent.length > 180 ? '...' : '');
 
-        // Meta
         document.getElementById('destaqueData').textContent = formatDate(top.date);
         document.getElementById('destaqueAutor').textContent = top.author || 'NewsPortal';
         document.getElementById('destaqueViews').textContent = top.views || 0;
       }
 
-      // ============================================================
-      // RENDERIZAR SIDEBAR (COM LINK)
-      // ============================================================
       function renderSidebar() {
         const sidebar = document.getElementById('sidebarNews');
         if (!sidebar) return;
@@ -926,9 +881,6 @@
         }).join('');
       }
 
-      // ============================================================
-      // RENDERIZAR MATÉRIAS (COM LINK)
-      // ============================================================
       function renderMaterias() {
         const list = document.getElementById('materiasList');
         if (!list) return;
@@ -968,17 +920,11 @@
         }).join('');
       }
 
-      // ============================================================
-      // ATUALIZAR HORA
-      // ============================================================
       function updateTime() {
         const now = new Date();
         document.getElementById('updateTime').textContent = now.toLocaleTimeString('pt-BR');
       }
 
-      // ============================================================
-      // BUSCA
-      // ============================================================
       function setupSearch() {
         const input = document.getElementById('searchInput');
         if (!input) return;
@@ -1004,9 +950,6 @@
         });
       }
 
-      // ============================================================
-      // CADEADO
-      // ============================================================
       let ctrlPressed = false;
       const lockIcon = document.getElementById('lockIcon');
 
@@ -1034,9 +977,6 @@
         });
       }
 
-      // ============================================================
-      // ATUALIZAR PERIODICAMENTE
-      // ============================================================
       function refreshContent() {
         DB.init();
         applySettings();
@@ -1048,9 +988,6 @@
         console.log('🔄 Conteúdo atualizado');
       }
 
-      // ============================================================
-      // INICIALIZAÇÃO
-      // ============================================================
       document.addEventListener('DOMContentLoaded', function() {
         DB.init();
         applySettings();
