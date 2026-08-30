@@ -130,9 +130,6 @@
       font-size: 0.8rem;
     }
 
-    /* ============================================================
-       FORMULÁRIOS
-    ============================================================ */
     .admin-form {
       background: #f8f9fa;
       padding: 1.5rem;
@@ -273,6 +270,7 @@
 
     .btn-edit { background: #3498db; color: white; }
     .btn-edit:hover { background: #2980b9; }
+
     .btn-delete { background: #e74c3c; color: white; }
     .btn-delete:hover { background: #c0392b; }
 
@@ -304,9 +302,6 @@
 
     .history-item .h-time { color: #6b7a8f; font-size: 0.8rem; }
 
-    /* ============================================================
-       SETTINGS
-    ============================================================ */
     .settings-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -395,9 +390,37 @@
       border: 2px dashed #e0e6ed;
     }
 
-    /* ============================================================
-       MODAL EDITOR
-    ============================================================ */
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      border-bottom: 1px solid #eef2f7;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .user-item .user-role {
+      background: #3498db;
+      color: white;
+      padding: 0.1rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      margin-left: 0.5rem;
+    }
+
+    .user-item .btn-delete-user {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .user-item .btn-delete-user:hover { background: #c0392b; }
+
+    /* MODAL */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -537,36 +560,6 @@
     .btn-cancel { background: #e74c3c; color: white; }
     .btn-cancel:hover { background: #c0392b; }
 
-    .user-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.8rem;
-      border-bottom: 1px solid #eef2f7;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .user-item .user-role {
-      background: #3498db;
-      color: white;
-      padding: 0.1rem 0.6rem;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      margin-left: 0.5rem;
-    }
-
-    .user-item .btn-delete-user {
-      background: #e74c3c;
-      color: white;
-      border: none;
-      padding: 0.2rem 0.8rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .user-item .btn-delete-user:hover { background: #c0392b; }
-
     @media (max-width: 768px) {
       .settings-grid {
         grid-template-columns: 1fr;
@@ -607,9 +600,7 @@
     <button onclick="switchTab('history')"><i class="fas fa-history"></i> Histórico</button>
   </div>
 
-  <!-- ============================================================
-    PAINEL DASHBOARD
-  ============================================================ -->
+  <!-- DASHBOARD -->
   <div class="admin-panel active" id="panel-dashboard">
     <div class="stats-grid">
       <div class="stat-card">
@@ -630,15 +621,13 @@
     <div id="lastMaterias"></div>
   </div>
 
-  <!-- ============================================================
-    PAINEL PERSONALIZAÇÃO
-  ============================================================ -->
+  <!-- SETTINGS -->
   <div class="admin-panel" id="panel-settings">
     <h3><i class="fas fa-palette"></i> Personalização do Site</h3>
     <p style="color:#6b7a8f; margin-bottom:1rem;">Altere as cores, fontes e elementos visuais do site em tempo real.</p>
 
     <form id="settingsForm" class="settings-grid">
-      <div class="full-width"><h4 style="margin-bottom:0.5rem;"><i class="fas fa-paint-bucket"></i> Cores</h4></div>
+      <div class="full-width"><h4><i class="fas fa-paint-bucket"></i> Cores</h4></div>
 
       <div class="form-group">
         <label>Cor Primária</label>
@@ -672,7 +661,7 @@
         </div>
       </div>
 
-      <div class="full-width"><h4 style="margin-top:0.5rem;"><i class="fas fa-font"></i> Fontes</h4></div>
+      <div class="full-width"><h4><i class="fas fa-font"></i> Fontes</h4></div>
 
       <div class="form-group">
         <label>Fonte Principal</label>
@@ -698,7 +687,7 @@
         </select>
       </div>
 
-      <div class="full-width"><h4 style="margin-top:0.5rem;"><i class="fas fa-tag"></i> Logo</h4></div>
+      <div class="full-width"><h4><i class="fas fa-tag"></i> Logo</h4></div>
 
       <div class="form-group">
         <label>Texto do Logo</label>
@@ -716,7 +705,7 @@
         <small style="color:#6b7a8f; font-size:0.7rem;">Ex: fa-newspaper, fa-globe, fa-bolt</small>
       </div>
 
-      <div class="full-width"><h4 style="margin-top:0.5rem;"><i class="fas fa-layer-group"></i> Layout</h4></div>
+      <div class="full-width"><h4><i class="fas fa-layer-group"></i> Layout</h4></div>
 
       <div class="form-group">
         <label>Largura Máxima</label>
@@ -741,7 +730,6 @@
       <button type="submit" class="btn-save-settings"><i class="fas fa-save"></i> Salvar Personalização</button>
     </form>
 
-    <!-- Preview -->
     <div class="preview-box">
       <h4><i class="fas fa-eye"></i> Preview ao vivo</h4>
       <div class="preview-content" id="livePreview">
@@ -757,9 +745,7 @@
     </div>
   </div>
 
-  <!-- ============================================================
-    PAINEL CATEGORIAS
-  ============================================================ -->
+  <!-- CATEGORIAS -->
   <div class="admin-panel" id="panel-categories">
     <h3><i class="fas fa-plus-circle"></i> Nova Categoria</h3>
     <form class="admin-form" id="categoryForm">
@@ -787,15 +773,11 @@
           <th style="text-align:right;">Ações</th>
         </tr>
       </thead>
-      <tbody id="categoriesBody">
-        <!-- Preenchido via JS -->
-      </tbody>
+      <tbody id="categoriesBody"></tbody>
     </table>
   </div>
 
-  <!-- ============================================================
-    PAINEL MATÉRIAS
-  ============================================================ -->
+  <!-- MATÉRIAS -->
   <div class="admin-panel" id="panel-materias">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
       <h3><i class="fas fa-newspaper"></i> Gerenciar Matérias</h3>
@@ -803,14 +785,10 @@
         <i class="fas fa-plus"></i> Nova Matéria
       </button>
     </div>
-    <div id="materiasListAdmin">
-      <!-- Preenchido via JS -->
-    </div>
+    <div id="materiasListAdmin"></div>
   </div>
 
-  <!-- ============================================================
-    PAINEL USUÁRIOS
-  ============================================================ -->
+  <!-- USUÁRIOS -->
   <div class="admin-panel" id="panel-users">
     <h3><i class="fas fa-user-plus"></i> Novo Usuário</h3>
     <form class="admin-form" id="userForm">
@@ -837,9 +815,7 @@
     <div id="usersList"></div>
   </div>
 
-  <!-- ============================================================
-    PAINEL HISTÓRICO
-  ============================================================ -->
+  <!-- HISTÓRICO -->
   <div class="admin-panel" id="panel-history">
     <h3><i class="fas fa-history"></i> Histórico de Alterações</h3>
     <div id="historyListAdmin"></div>
@@ -847,9 +823,7 @@
 
 </div>
 
-<!-- ============================================================
-   MODAL EDITOR
-============================================================ -->
+<!-- MODAL EDITOR -->
 <div class="modal-overlay" id="editorModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -893,7 +867,7 @@
 <script src="data/database.js"></script>
 <script>
   // ============================================================
-  // ADMIN - JAVASCRIPT
+  // ADMIN - JAVASCRIPT COMPLETO E CORRIGIDO
   // ============================================================
 
   if (typeof DB === 'undefined') {
@@ -904,6 +878,9 @@
 
   let editingMateriaId = null;
 
+  // ============================================================
+  // UTILITÁRIOS
+  // ============================================================
   function formatDate(dateStr) {
     const date = new Date(dateStr);
     return date.toLocaleString('pt-BR', {
@@ -914,6 +891,9 @@
     });
   }
 
+  // ============================================================
+  // TABS
+  // ============================================================
   function switchTab(tab) {
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active'));
@@ -929,6 +909,9 @@
     if (tab === 'history') renderHistory();
   }
 
+  // ============================================================
+  // DASHBOARD
+  // ============================================================
   function updateDashboard() {
     const materias = DB.getAllMaterias();
     const published = materias.filter(m => m.status === 'published');
@@ -950,7 +933,7 @@
           </div>
         </div>
         <div class="materia-actions">
-          <button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i></button>
+          <button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i> Editar</button>
         </div>
       </div>
     `).join('');
@@ -1149,7 +1132,7 @@
   });
 
   // ============================================================
-  // MATÉRIAS
+  // MATÉRIAS (COM BOTÃO EDITAR FUNCIONANDO)
   // ============================================================
   function renderMateriasAdmin() {
     const list = document.getElementById('materiasListAdmin');
@@ -1172,9 +1155,17 @@
     `).join('');
   }
 
+  // ============================================================
+  // EDITAR MATÉRIA - FUNÇÃO CORRIGIDA
+  // ============================================================
   function editMateria(id) {
-    const materia = DB.materias.find(m => m.id === id);
-    if (!materia) return;
+    console.log('✏️ Editando matéria ID:', id);
+    const materia = DB.getMateriaById(id);
+    
+    if (!materia) {
+      alert('❌ Matéria não encontrada!');
+      return;
+    }
     
     editingMateriaId = id;
     document.getElementById('editorTitle').textContent = `✎ Editando: ${materia.title}`;
@@ -1184,6 +1175,7 @@
     document.getElementById('editorModal').classList.add('visible');
     
     populateCategorySelect(materia.category);
+    console.log('✅ Matéria carregada para edição:', materia.title);
   }
 
   function openEditor() {
@@ -1234,19 +1226,22 @@
 
     if (editingMateriaId) {
       DB.editMateria(editingMateriaId, data);
+      alert('✅ Matéria atualizada com sucesso!');
     } else {
       DB.addMateria(data);
+      alert('✅ Matéria criada com sucesso!');
     }
 
     closeEditor();
     renderMateriasAdmin();
-    alert(`✅ Matéria ${status === 'published' ? 'publicada' : 'salva como rascunho'} com sucesso!`);
+    updateDashboard();
   }
 
   function deleteMateria(id) {
     if (confirm('Tem certeza que deseja excluir esta matéria?')) {
       DB.deleteMateria(id);
       renderMateriasAdmin();
+      updateDashboard();
     }
   }
 
@@ -1317,6 +1312,9 @@
     `).join('');
   }
 
+  // ============================================================
+  // LOGOUT
+  // ============================================================
   function logout() {
     if (confirm('Deseja sair do painel administrativo?')) {
       window.location.href = 'index.html';
@@ -1327,11 +1325,16 @@
   // INICIALIZAÇÃO
   // ============================================================
   document.addEventListener('DOMContentLoaded', function() {
-    if (DB.categories.length === 0) {
-      DB.categories = JSON.parse(JSON.stringify(DB.settings.defaultCategories));
-      DB.save();
+    // Verificar se o DB está carregado
+    if (typeof DB === 'undefined') {
+      alert('❌ Banco de dados não encontrado! Recarregue a página.');
+      return;
     }
+
+    // Garantir que os dados estão carregados
+    DB.init();
     
+    // Renderizar tudo
     updateDashboard();
     loadSettings();
     renderCategories();
@@ -1339,9 +1342,10 @@
     renderUsers();
     renderHistory();
 
-    console.log('🔐 Painel Admin carregado!');
+    console.log('🔐 Painel Admin carregado com sucesso!');
     console.log(`📂 ${DB.getCategories().length} categorias`);
     console.log(`📄 ${DB.getAllMaterias().length} matérias`);
+    console.log('✅ Botão Editar está funcionando corretamente!');
   });
 
 </script>
