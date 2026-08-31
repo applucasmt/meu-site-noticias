@@ -259,4 +259,169 @@ const Database = {
       }
       if (data.icon) cat.icon = data.icon.trim();
       if (data.active !== undefined) cat.active = data.active;
-      this.addHistory(`Editou
+      this.addHistory(`Editou categoria: ${cat.name}`);
+      this.save();
+      return true;
+    }
+    return false;
+  },
+
+  deleteCategory(id) {
+    const cat = this.cache.categories.find(c => c.id === id);
+    if (cat) {
+      cat.active = false;
+      this.addHistory(`Desativou categoria: ${cat.name}`);
+      this.save();
+      return true;
+    }
+    return false;
+  },
+
+  reorderCategories(orderedIds) {
+    orderedIds.forEach((id, index) => {
+      const cat = this.cache.categories.find(c => c.id === id);
+      if (cat) cat.order = index + 1;
+    });
+    this.addHistory('Reordenou categorias');
+    this.save();
+  },
+
+  // ============================================================
+  // MÉTODOS - MATÉRIAS
+  // ============================================================
+  async addMateria(data) {
+    const maxId = this.cache.materias.reduce((max, m) => Math.max(max, m.id || 0), 0);
+    const newMateria = {
+      id: maxId + 1,
+      title: data.title.trim(),
+      category: data.category,
+      slug: this.generateSlug(data.title),
+      content: data.content || '',
+      image: data.image || '',
+      status: data.status || 'draft',
+      author: data.author || 'admin',
+      date: new Date().toISOString(),
+      views: 0
+    };
+    this.cache.materias.push(newMateria);
+    this.addHistory(`Criou matéria: ${data.title}`);
+    await this.save();
+    return newMateria;
+  },
+
+  async editMateria(id, data) {
+    const mat = this.cache.materias.find(m => m.id === id);
+    if (mat) {
+      if (data.title) {
+        mat.title = data.title.trim();
+        mat.slug = this.generateSlug(data.title);
+      }
+      if (data.category) mat.category = data.category;
+      if (data.content) mat.content = data.content;
+      if (data.image !== undefined) mat.image = data.image;
+      if (data.status) mat.status = data.status;
+      this.addHistory(`Editou matéria: ${mat.title}`);
+      await this.save();
+      return true;
+    }
+    return false;
+  },
+
+  async deleteMateria(id) {
+    const idx = this.cache.materias.findIndex(m => m.id === id);
+    if (idx > -1) {
+      const title = this.cache.materias[idx].title;
+      this.cache.materias.splice(idx, 1);
+      this.addHistory(`Excluiu matéria: ${title}`);
+      await this.save();
+      return true;
+    }
+    return false;
+  },
+
+  // ============================================================
+  // MÉTODOS - USUÁRIOS
+  // ============================================================
+  addUser(username, password, level, name) {
+    if (this.cache.users[username]) {
+      return false;
+    }
+    this.cache.users[username] = {
+      password: password,
+      level: level || 'editor',
+      name: name || username.charAt(0).toUpperCase() + username.slice(1)
+    };
+    this.addHistory(`Adicionou usuário: ${username} (${level})`);
+    this.save();
+    return true;
+  },
+
+  deleteUser(username) {
+    if (username === 'admin') return false;
+    delete this.cache.users[username];
+    this.addHistory(`Removeu usuário: ${username}`);
+    this.save();
+    return true;
+  },
+
+  // ============================================================
+  // MÉTODOS - CONFIGURAÇÕES
+  // ============================================================
+  async updateSettings(newSettings) {
+    Object.keys(newSettings).forEach(key => {
+      if (this.cache.settings[key] !== undefined) {
+        this.cache.settings[key] = newSettings[key];
+      }
+    });
+    this.addHistory('Atualizou configurações do site');
+    await this.save();
+    return this.cache.settings;
+  },
+
+  // ============================================================
+  // UTILITÁRIOS
+  // ============================================================
+  generateSlug(text) {
+    return text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-');
+  },
+
+  addHistory(message, user = 'admin') {
+    if (!this.cache.history) this.cache.history = [];
+    this.cache.history.unshift({
+      message,
+      user: user || 'admin',
+      time: new Date().toISOString()
+    });
+    if (this.cache.history.length > 100) {
+      this.cache.history = this.cache.history.slice(0, 100);
+    }
+  },
+
+  // ============================================================
+  // INICIALIZAÇÃO
+  // ============================================================
+  async init() {
+    await this.load();
+    return this;
+  }
+};
+
+// ============================================================
+// EXPORTAR
+// ============================================================
+let DB = null;
+
+(async function() {
+  DB = await Database.init();
+  window.DB = DB;
+  console.log('📰 Database inicializado com Google Sheets!');
+})();
+
+window.Database = Database;
