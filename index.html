@@ -1125,19 +1125,17 @@
       }
 
       // ============================================================
-      // INICIALIZAÇÃO - CARREGA DADOS E MOSTRA CONTEÚDO
+      // INICIALIZAÇÃO - CORRIGIDA PARA AGUARDAR O DB.INIT()
       // ============================================================
       async function init() {
         try {
-          // Verificar se o DB está disponível
-          if (typeof DB === 'undefined') {
-            throw new Error('Banco de dados não carregado');
+          // Verificar se a classe Database global está disponível
+          if (typeof Database === 'undefined') {
+            throw new Error('Script do Banco de dados não carregado');
           }
 
-          // Aguardar o carregamento dos dados
-          if (!DB.cache || !DB.cache.loaded) {
-            await DB.load();
-          }
+          // Inicializa e aguarda o carregamento TOTAL antes de renderizar a tela
+          window.DB = await Database.init();
 
           // Aplicar personalização
           applySettings();
@@ -1150,7 +1148,7 @@
           updateTime();
           setupSearch();
 
-          // Mostrar o conteúdo
+          // Oculta o loading e mostra o conteúdo principal
           loadingOverlay.classList.add('hidden');
           mainContent.classList.add('visible');
 
@@ -1159,17 +1157,16 @@
           console.log(`📄 ${DB.getMaterias().length} matérias publicadas`);
           console.log('🔑 Pressione Ctrl para acessar o painel admin');
 
-          // Atualizar a cada 30 segundos
-          setInterval(() => {
-            DB.load().then(() => {
-              applySettings();
-              renderMenus();
-              renderDestaque();
-              renderSidebar();
-              renderMaterias();
-              updateTime();
-              console.log('🔄 Conteúdo atualizado');
-            });
+          // Atualizar silenciosamente a cada 30 segundos
+          setInterval(async () => {
+            await DB.load();
+            applySettings();
+            renderMenus();
+            renderDestaque();
+            renderSidebar();
+            renderMaterias();
+            updateTime();
+            console.log('🔄 Conteúdo atualizado');
           }, 30000);
 
         } catch (error) {
