@@ -8,8 +8,8 @@ const Database = {
   // ============================================================
   config: {
     // COLOQUE A URL DO SEU WEB APP AQUI
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbzdzU573JpmwMARvW4tOZl1yTAT18EaRnmRCUD7CVW0t_TsvJc9nNPzqv6Q1AR1gwOcaA/exec',
-    spreadsheetId: '1YIj0bW2KE9vknkEIZzRMOB_KUca2AzfTdqXln_22vRk'
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbyK_ZkP_lreozQ8CEvogmjk8gqCIgs00PoSSpidoJevAwJc3pgwiq6I-jod1_FVTBV0GQ/exec',
+    spreadsheetId: '1JDcxZ8HOnLu-7WMpr6Y7edERSt5NuLJBS0b9FExtA7U'
   },
 
   // ============================================================
