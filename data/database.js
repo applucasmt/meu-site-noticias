@@ -10,7 +10,7 @@ const Database = {
     // COLOQUE A URL DO SEU WEB APP AQUI
     webAppUrl: 'https://script.google.com/macros/s/AKfycbyK_ZkP_lreozQ8CEvogmjk8gqCIgs00PoSSpidoJevAwJc3pgwiq6I-jod1_FVTBV0GQ/exec',
     spreadsheetId: '1JDcxZ8HOnLu-7WMpr6Y7edERSt5NuLJBS0b9FExtA7U'
-  },
+   },
 
   // ============================================================
   // DADOS EM CACHE
@@ -30,6 +30,7 @@ const Database = {
   async load() {
     try {
       console.log('📡 Carregando dados do Google Sheets...');
+      console.log('🔗 URL:', this.config.webAppUrl);
       
       const response = await fetch(`${this.config.webAppUrl}?action=getAllData`);
       
@@ -43,10 +44,14 @@ const Database = {
         throw new Error(data.error || 'Erro ao carregar dados');
       }
       
-      this.cache.settings = data.settings || this.getDefaultSettings();
-      this.cache.categories = data.categories || this.getDefaultCategories();
-      this.cache.materias = data.materias || this.getDefaultMaterias();
-      this.cache.users = data.users || this.getDefaultUsers();
+      if (!data.settings || !data.categories) {
+        throw new Error('Dados incompletos da planilha');
+      }
+      
+      this.cache.settings = data.settings;
+      this.cache.categories = data.categories;
+      this.cache.materias = data.materias || [];
+      this.cache.users = data.users || {};
       this.cache.history = data.history || [];
       this.cache.loaded = true;
       
@@ -59,45 +64,41 @@ const Database = {
       
     } catch (error) {
       console.error('❌ Erro ao carregar dados do Google Sheets:', error);
-      return this.loadFromLocalStorage();
-    }
-  },
-
-  // ============================================================
-  // LOCALSTORAGE (FALLBACK)
-  // ============================================================
-  loadFromLocalStorage() {
-    try {
-      const saved = localStorage.getItem('newsportal_db');
-      if (saved) {
-        const data = JSON.parse(saved);
-        this.cache.settings = data.settings || this.getDefaultSettings();
-        this.cache.categories = data.categories || this.getDefaultCategories();
-        this.cache.materias = data.materias || this.getDefaultMaterias();
-        this.cache.users = data.users || this.getDefaultUsers();
-        this.cache.history = data.history || [];
-        this.cache.loaded = true;
-        console.log('📦 Dados carregados do localStorage (fallback)');
-        return true;
-      }
-    } catch (e) {
-      console.warn('Erro ao carregar localStorage:', e);
-    }
-    return false;
-  },
-
-  saveToLocalStorage() {
-    try {
-      localStorage.setItem('newsportal_db', JSON.stringify({
-        settings: this.cache.settings,
-        categories: this.cache.categories,
-        materias: this.cache.materias,
-        users: this.cache.users,
-        history: this.cache.history
-      }));
-      console.log('💾 Dados salvos no localStorage');
-    } catch (e) {
-      console.warn('Erro ao salvar localStorage:', e);
+      console.log('⚠️ Verifique se o Web App está publicado corretamente');
+      
+      // Mostrar erro na tela para debug
+      document.body.innerHTML = `
+        <div style="text-align:center; padding:4rem 2rem; font-family: Arial, sans-serif;">
+          <h1 style="color:#e74c3c;">⚠️ Erro ao carregar dados</h1>
+          <p style="color:#6b7a8f; font-size:1.1rem;">Não foi possível conectar ao banco de dados.</p>
+          <p style="color:#95a5a6; font-size:0.9rem; margin-top:0.5rem;">
+            Erro: ${error.message}
+          </p>
+          <p style="color:#95a5a6; font-size:0.8rem; margin-top:0.5rem;">
+            Verifique se o Web App do Google Sheets está publicado e a URL está correta.
+          </p>
+          <div style="margin-top:1.5rem; background:#f8f9fa; padding:1rem; border-radius:8px; text-align:left; max-width:600px; margin-left:auto; margin-right:auto;">
+            <p style="font-size:0.8rem; color:#6b7a8f;">
+              <strong>URL configurada:</strong><br>
+              ${this.config.webAppUrl}
+            </p>
+            <p style="font-size:0.8rem; color:#6b7a8f; margin-top:0.5rem;">
+              <strong>Como corrigir:</strong><br>
+              1. Acesse script.google.com<br>
+              2. Publique o Web App novamente<br>
+              3. Copie a nova URL<br>
+              4. Atualize no database.js
+            </p>
+          </div>
+          <div style="margin-top:1.5rem;">
+            <button onclick="location.reload()" style="background:#3498db; color:white; border:none; padding:0.6rem 1.5rem; border-radius:6px; font-size:1rem; cursor:pointer;">
+              🔄 Tentar novamente
+            </button>
+          </div>
+        </div>
+      `;
+      
+      return false;
     }
   },
 
@@ -106,7 +107,7 @@ const Database = {
   // ============================================================
   async save() {
     try {
-      this.saveToLocalStorage();
+      console.log('💾 Salvando dados no Google Sheets...');
       
       const response = await fetch(this.config.webAppUrl, {
         method: 'POST',
@@ -117,78 +118,30 @@ const Database = {
         })
       });
       
-      if (response.ok) {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
         console.log('✅ Dados salvos no Google Sheets!');
         return true;
+      } else {
+        throw new Error(result.error || 'Erro ao salvar');
       }
-      return true;
       
     } catch (error) {
-      console.warn('⚠️ Erro ao salvar no Google Sheets:', error);
-      return true;
+      console.error('❌ Erro ao salvar no Google Sheets:', error);
+      return false;
     }
-  },
-
-  // ============================================================
-  // DADOS PADRÃO (FALLBACK)
-  // ============================================================
-  getDefaultSettings() {
-    return {
-      primaryColor: '#d32f2f',
-      secondaryColor: '#1e2a3a',
-      backgroundColor: '#f4f6f9',
-      textColor: '#1e2a3a',
-      fontFamily: 'Segoe UI, Roboto, system-ui, sans-serif',
-      headingFont: 'Segoe UI, Roboto, system-ui, sans-serif',
-      logoText: 'NewsPortal',
-      logoSubtext: '· 2026',
-      logoIcon: 'fa-newspaper',
-      containerMaxWidth: '1280px',
-      borderRadius: '1.5rem'
-    };
-  },
-
-  getDefaultCategories() {
-    return [
-      { id: 1, name: 'Política', slug: 'politica', icon: 'fa-gavel', active: true, order: 1 },
-      { id: 2, name: 'Economia', slug: 'economia', icon: 'fa-chart-line', active: true, order: 2 },
-      { id: 3, name: 'Tecnologia', slug: 'tecnologia', icon: 'fa-microchip', active: true, order: 3 },
-      { id: 4, name: 'Saúde', slug: 'saude', icon: 'fa-heartbeat', active: true, order: 4 },
-      { id: 5, name: 'Cultura', slug: 'cultura', icon: 'fa-film', active: true, order: 5 },
-      { id: 6, name: 'Esportes', slug: 'esportes', icon: 'fa-futbol', active: true, order: 6 },
-      { id: 7, name: 'Internacional', slug: 'internacional', icon: 'fa-globe-americas', active: true, order: 7 }
-    ];
-  },
-
-  getDefaultMaterias() {
-    return [
-      {
-        id: 1,
-        title: 'Governo anuncia novo pacote de incentivo à tecnologia verde',
-        category: 'Política',
-        slug: 'governo-anuncia-novo-pacote',
-        content: '<p>Medidas incluem crédito para startups e renovação da frota de veículos elétricos. Expectativa é gerar 50 mil empregos até 2027.</p>',
-        image: '',
-        status: 'published',
-        author: 'admin',
-        date: new Date().toISOString(),
-        views: 1250
-      }
-    ];
-  },
-
-  getDefaultUsers() {
-    return {
-      'admin': { password: 'admin123', level: 'admin', name: 'Administrador' },
-      'editor': { password: 'editor123', level: 'editor', name: 'Editor' }
-    };
   },
 
   // ============================================================
   // GETTERS
   // ============================================================
   getSettings() {
-    return this.cache.settings || this.getDefaultSettings();
+    return this.cache.settings || {};
   },
 
   getCategories() {
@@ -223,7 +176,7 @@ const Database = {
   },
 
   getUsers() {
-    return this.cache.users || this.getDefaultUsers();
+    return this.cache.users || {};
   },
 
   getHistory() {
@@ -234,148 +187,256 @@ const Database = {
   // MÉTODOS - CATEGORIAS
   // ============================================================
   async addCategory(name, icon = 'fa-tag') {
-    const slug = this.generateSlug(name);
-    const maxOrder = Math.max(...this.cache.categories.map(c => c.order), 0);
-    const newCategory = {
-      id: this.cache.categories.length + 1,
-      name: name.trim(),
-      slug,
-      icon: icon.trim() || 'fa-tag',
-      active: true,
-      order: maxOrder + 1
-    };
-    this.cache.categories.push(newCategory);
-    this.addHistory(`Criou categoria: ${name}`);
-    await this.save();
-    return newCategory;
-  },
-
-  editCategory(id, data) {
-    const cat = this.cache.categories.find(c => c.id === id);
-    if (cat) {
-      if (data.name) {
-        cat.name = data.name.trim();
-        cat.slug = this.generateSlug(data.name);
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'addCategory',
+          name: name,
+          icon: icon
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await this.load(); // Recarregar dados
+        return result;
       }
-      if (data.icon) cat.icon = data.icon.trim();
-      if (data.active !== undefined) cat.active = data.active;
-      this.addHistory(`Editou categoria: ${cat.name}`);
-      this.save();
-      return true;
+      throw new Error(result.error);
+      
+    } catch (error) {
+      console.error('❌ Erro ao adicionar categoria:', error);
+      return { success: false, error: error.message };
     }
-    return false;
   },
 
-  deleteCategory(id) {
-    const cat = this.cache.categories.find(c => c.id === id);
-    if (cat) {
-      cat.active = false;
-      this.addHistory(`Desativou categoria: ${cat.name}`);
-      this.save();
-      return true;
+  async editCategory(id, data) {
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'editCategory',
+          id: id,
+          data: data
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await this.load();
+        return result;
+      }
+      throw new Error(result.error);
+      
+    } catch (error) {
+      console.error('❌ Erro ao editar categoria:', error);
+      return { success: false, error: error.message };
     }
-    return false;
   },
 
-  reorderCategories(orderedIds) {
-    orderedIds.forEach((id, index) => {
-      const cat = this.cache.categories.find(c => c.id === id);
-      if (cat) cat.order = index + 1;
-    });
-    this.addHistory('Reordenou categorias');
-    this.save();
+  async deleteCategory(id) {
+    // Soft delete - desativa
+    return this.editCategory(id, { active: false });
+  },
+
+  async reorderCategories(orderedIds) {
+    try {
+      // Atualizar ordem de cada categoria
+      for (let i = 0; i < orderedIds.length; i++) {
+        await this.editCategory(orderedIds[i], { order: i + 1 });
+      }
+      await this.load();
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Erro ao reordenar categorias:', error);
+      return { success: false, error: error.message };
+    }
   },
 
   // ============================================================
   // MÉTODOS - MATÉRIAS
   // ============================================================
   async addMateria(data) {
-    const maxId = this.cache.materias.reduce((max, m) => Math.max(max, m.id || 0), 0);
-    const newMateria = {
-      id: maxId + 1,
-      title: data.title.trim(),
-      category: data.category,
-      slug: this.generateSlug(data.title),
-      content: data.content || '',
-      image: data.image || '',
-      status: data.status || 'draft',
-      author: data.author || 'admin',
-      date: new Date().toISOString(),
-      views: 0
-    };
-    this.cache.materias.push(newMateria);
-    this.addHistory(`Criou matéria: ${data.title}`);
-    await this.save();
-    return newMateria;
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'addMateria',
+          data: data
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await this.load();
+        return result;
+      }
+      throw new Error(result.error);
+      
+    } catch (error) {
+      console.error('❌ Erro ao adicionar matéria:', error);
+      return { success: false, error: error.message };
+    }
   },
 
   async editMateria(id, data) {
-    const mat = this.cache.materias.find(m => m.id === id);
-    if (mat) {
-      if (data.title) {
-        mat.title = data.title.trim();
-        mat.slug = this.generateSlug(data.title);
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'editMateria',
+          id: id,
+          data: data
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await this.load();
+        return result;
       }
-      if (data.category) mat.category = data.category;
-      if (data.content) mat.content = data.content;
-      if (data.image !== undefined) mat.image = data.image;
-      if (data.status) mat.status = data.status;
-      this.addHistory(`Editou matéria: ${mat.title}`);
-      await this.save();
-      return true;
+      throw new Error(result.error);
+      
+    } catch (error) {
+      console.error('❌ Erro ao editar matéria:', error);
+      return { success: false, error: error.message };
     }
-    return false;
   },
 
   async deleteMateria(id) {
-    const idx = this.cache.materias.findIndex(m => m.id === id);
-    if (idx > -1) {
-      const title = this.cache.materias[idx].title;
-      this.cache.materias.splice(idx, 1);
-      this.addHistory(`Excluiu matéria: ${title}`);
-      await this.save();
-      return true;
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'deleteMateria',
+          id: id
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await this.load();
+        return result;
+      }
+      throw new Error(result.error);
+      
+    } catch (error) {
+      console.error('❌ Erro ao excluir matéria:', error);
+      return { success: false, error: error.message };
     }
-    return false;
+  },
+
+  async incrementViews(id) {
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'incrementViews',
+          id: id
+        })
+      });
+      
+      return await response.json();
+      
+    } catch (error) {
+      console.error('❌ Erro ao incrementar views:', error);
+      return { success: false, error: error.message };
+    }
   },
 
   // ============================================================
   // MÉTODOS - USUÁRIOS
   // ============================================================
-  addUser(username, password, level, name) {
-    if (this.cache.users[username]) {
-      return false;
+  async addUser(username, password, level, name) {
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'addUser',
+          username: username,
+          password: password,
+          level: level,
+          name: name
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await this.load();
+        return result;
+      }
+      throw new Error(result.error);
+      
+    } catch (error) {
+      console.error('❌ Erro ao adicionar usuário:', error);
+      return { success: false, error: error.message };
     }
-    this.cache.users[username] = {
-      password: password,
-      level: level || 'editor',
-      name: name || username.charAt(0).toUpperCase() + username.slice(1)
-    };
-    this.addHistory(`Adicionou usuário: ${username} (${level})`);
-    this.save();
-    return true;
   },
 
-  deleteUser(username) {
-    if (username === 'admin') return false;
-    delete this.cache.users[username];
-    this.addHistory(`Removeu usuário: ${username}`);
-    this.save();
-    return true;
+  async deleteUser(username) {
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'deleteUser',
+          username: username
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await this.load();
+        return result;
+      }
+      throw new Error(result.error);
+      
+    } catch (error) {
+      console.error('❌ Erro ao remover usuário:', error);
+      return { success: false, error: error.message };
+    }
   },
 
   // ============================================================
   // MÉTODOS - CONFIGURAÇÕES
   // ============================================================
   async updateSettings(newSettings) {
-    Object.keys(newSettings).forEach(key => {
-      if (this.cache.settings[key] !== undefined) {
-        this.cache.settings[key] = newSettings[key];
+    try {
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'updateSettings',
+          settings: newSettings
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await this.load();
+        return result;
       }
-    });
-    this.addHistory('Atualizou configurações do site');
-    await this.save();
-    return this.cache.settings;
+      throw new Error(result.error);
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar configurações:', error);
+      return { success: false, error: error.message };
+    }
   },
 
   // ============================================================
@@ -392,18 +453,6 @@ const Database = {
       .replace(/--+/g, '-');
   },
 
-  addHistory(message, user = 'admin') {
-    if (!this.cache.history) this.cache.history = [];
-    this.cache.history.unshift({
-      message,
-      user: user || 'admin',
-      time: new Date().toISOString()
-    });
-    if (this.cache.history.length > 100) {
-      this.cache.history = this.cache.history.slice(0, 100);
-    }
-  },
-
   // ============================================================
   // INICIALIZAÇÃO
   // ============================================================
@@ -414,14 +463,15 @@ const Database = {
 };
 
 // ============================================================
-// EXPORTAR
+// INICIALIZAR
 // ============================================================
 let DB = null;
 
-(async function() {
+(async function initDatabase() {
   DB = await Database.init();
   window.DB = DB;
   console.log('📰 Database inicializado com Google Sheets!');
 })();
 
+window.Database = Database;
 window.Database = Database;
