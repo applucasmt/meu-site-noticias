@@ -10,7 +10,7 @@ const Database = {
     // COLOQUE A URL DO SEU WEB APP AQUI
     webAppUrl: 'https://script.google.com/macros/s/AKfycbxjRL-yW22O7W0bIUvQFLTCJ1gbfmM6AAJaY9kDJWfe7dHYxiSR-sbOeF1I9Z95BK34/exec',
     spreadsheetId: '1Oqa-fRio2jjfM0SgeGsnvNuc5yFJXozNWxw0nYHyUHc'
-   },
+  },
 
   // ============================================================
   // DADOS EM CACHE
@@ -104,28 +104,20 @@ const Database = {
   },
 
   // ============================================================
-  // CARREGAR DADOS DO GOOGLE SHEETS (COM FALLBACK)
+  // CARREGAR DADOS DO GOOGLE SHEETS
   // ============================================================
   async load() {
     try {
       console.log('📡 Carregando dados do Google Sheets...');
-      console.log('🔗 URL:', this.config.webAppUrl);
       
       const response = await fetch(`${this.config.webAppUrl}?action=getAllData`);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
       const data = await response.json();
       
-      if (data.success === false) {
-        throw new Error(data.error || 'Erro ao carregar dados');
-      }
-      
-      if (!data.settings || !data.categories) {
-        throw new Error('Dados incompletos da planilha');
-      }
+      if (data.success === false) throw new Error(data.error || 'Erro ao carregar dados');
+      if (!data.settings || !data.categories) throw new Error('Dados incompletos da planilha');
       
       this.cache.settings = data.settings;
       this.cache.categories = data.categories;
@@ -135,9 +127,6 @@ const Database = {
       this.cache.loaded = true;
       
       console.log('✅ Dados carregados do Google Sheets!');
-      console.log(`📂 ${this.cache.categories.length} categorias`);
-      console.log(`📄 ${this.cache.materias.length} matérias`);
-      
       return true;
       
     } catch (error) {
@@ -146,68 +135,41 @@ const Database = {
     }
   },
 
-  // ============================================================
-  // FALLBACK - DADOS LOCAIS
-  // ============================================================
   loadFromFallback() {
-    console.log('📦 Usando dados padrão (fallback)');
-    
     this.cache.settings = this.getDefaultSettings();
     this.cache.categories = this.getDefaultCategories();
     this.cache.materias = this.getDefaultMaterias();
     this.cache.users = this.getDefaultUsers();
     this.cache.history = [];
     this.cache.loaded = true;
-    
-    // Salvar no localStorage para persistência
     this.saveToLocalStorage();
-    
-    console.log(`📂 ${this.cache.categories.length} categorias (fallback)`);
-    console.log(`📄 ${this.cache.materias.length} matérias (fallback)`);
-    
     return true;
   },
 
-  // ============================================================
-  // SALVAR NO LOCALSTORAGE (FALLBACK)
-  // ============================================================
   saveToLocalStorage() {
     try {
-      localStorage.setItem('newsportal_db', JSON.stringify({
-        settings: this.cache.settings,
-        categories: this.cache.categories,
-        materias: this.cache.materias,
-        users: this.cache.users,
-        history: this.cache.history
-      }));
-      console.log('💾 Dados salvos no localStorage (fallback)');
+      localStorage.setItem('newsportal_db', JSON.stringify(this.cache));
     } catch (e) {
       console.warn('Erro ao salvar localStorage:', e);
     }
   },
 
-  // ============================================================
-  // SALVAR (TENTA GOOGLE SHEETS, MAS USA LOCALSTORAGE)
-  // ============================================================
   async save() {
     try {
       this.saveToLocalStorage();
       
+      // Tipo 'text/plain' evita erros de preflight CORS no Google Apps Script
       const response = await fetch(this.config.webAppUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'updateSettings',
           settings: this.cache.settings
         })
       });
       
-      if (response.ok) {
-        console.log('✅ Dados salvos no Google Sheets!');
-        return true;
-      }
+      if (response.ok) console.log('✅ Dados salvos no Google Sheets!');
       return true;
-      
     } catch (error) {
       console.warn('⚠️ Erro ao salvar no Google Sheets:', error);
       return true;
@@ -215,78 +177,38 @@ const Database = {
   },
 
   // ============================================================
-  // GETTERS
+  // GETTERS & SETTERS (Mantidos idênticos)
   // ============================================================
-  getSettings() {
-    return this.cache.settings || this.getDefaultSettings();
-  },
-
-  getCategories() {
-    return (this.cache.categories || []).filter(c => c.active).sort((a, b) => a.order - b.order);
-  },
-
-  getAllCategories() {
-    return (this.cache.categories || []).sort((a, b) => a.order - b.order);
-  },
-
-  getCategoryBySlug(slug) {
-    return (this.cache.categories || []).find(c => c.slug === slug && c.active);
-  },
-
+  getSettings() { return this.cache.settings || this.getDefaultSettings(); },
+  getCategories() { return (this.cache.categories || []).filter(c => c.active).sort((a, b) => a.order - b.order); },
+  getAllCategories() { return (this.cache.categories || []).sort((a, b) => a.order - b.order); },
+  getCategoryBySlug(slug) { return (this.cache.categories || []).find(c => c.slug === slug && c.active); },
   getMaterias(categorySlug = null) {
     let result = (this.cache.materias || []).filter(m => m.status === 'published');
     if (categorySlug) {
       const cat = this.getCategoryBySlug(categorySlug);
-      if (cat) {
-        result = result.filter(m => m.category === cat.name);
-      }
+      if (cat) result = result.filter(m => m.category === cat.name);
     }
     return result.sort((a, b) => new Date(b.date) - new Date(a.date));
   },
+  getAllMaterias() { return (this.cache.materias || []).sort((a, b) => new Date(b.date) - new Date(a.date)); },
+  getMateriaById(id) { return (this.cache.materias || []).find(m => m.id === id); },
+  getUsers() { return this.cache.users || this.getDefaultUsers(); },
+  getHistory() { return this.cache.history || []; },
 
-  getAllMaterias() {
-    return (this.cache.materias || []).sort((a, b) => new Date(b.date) - new Date(a.date));
-  },
-
-  getMateriaById(id) {
-    return (this.cache.materias || []).find(m => m.id === id);
-  },
-
-  getUsers() {
-    return this.cache.users || this.getDefaultUsers();
-  },
-
-  getHistory() {
-    return this.cache.history || [];
-  },
-
-  // ============================================================
-  // MÉTODOS - CATEGORIAS
-  // ============================================================
   addCategory(name, icon = 'fa-tag') {
     const slug = this.generateSlug(name);
     const maxOrder = Math.max(...this.cache.categories.map(c => c.order), 0);
-    const newCategory = {
-      id: this.cache.categories.length + 1,
-      name: name.trim(),
-      slug,
-      icon: icon.trim() || 'fa-tag',
-      active: true,
-      order: maxOrder + 1
-    };
+    const newCategory = { id: this.cache.categories.length + 1, name: name.trim(), slug, icon: icon.trim() || 'fa-tag', active: true, order: maxOrder + 1 };
     this.cache.categories.push(newCategory);
     this.addHistory(`Criou categoria: ${name}`);
     this.save();
     return newCategory;
   },
-
   editCategory(id, data) {
     const cat = this.cache.categories.find(c => c.id === id);
     if (cat) {
-      if (data.name) {
-        cat.name = data.name.trim();
-        cat.slug = this.generateSlug(data.name);
-      }
+      if (data.name) { cat.name = data.name.trim(); cat.slug = this.generateSlug(data.name); }
       if (data.icon) cat.icon = data.icon.trim();
       if (data.active !== undefined) cat.active = data.active;
       this.addHistory(`Editou categoria: ${cat.name}`);
@@ -295,18 +217,11 @@ const Database = {
     }
     return false;
   },
-
   deleteCategory(id) {
     const cat = this.cache.categories.find(c => c.id === id);
-    if (cat) {
-      cat.active = false;
-      this.addHistory(`Desativou categoria: ${cat.name}`);
-      this.save();
-      return true;
-    }
+    if (cat) { cat.active = false; this.addHistory(`Desativou categoria: ${cat.name}`); this.save(); return true; }
     return false;
   },
-
   reorderCategories(orderedIds) {
     orderedIds.forEach((id, index) => {
       const cat = this.cache.categories.find(c => c.id === id);
@@ -316,36 +231,18 @@ const Database = {
     this.save();
   },
 
-  // ============================================================
-  // MÉTODOS - MATÉRIAS
-  // ============================================================
   addMateria(data) {
     const maxId = this.cache.materias.reduce((max, m) => Math.max(max, m.id || 0), 0);
-    const newMateria = {
-      id: maxId + 1,
-      title: data.title.trim(),
-      category: data.category,
-      slug: this.generateSlug(data.title),
-      content: data.content || '',
-      image: data.image || '',
-      status: data.status || 'draft',
-      author: data.author || 'admin',
-      date: new Date().toISOString(),
-      views: 0
-    };
+    const newMateria = { id: maxId + 1, title: data.title.trim(), category: data.category, slug: this.generateSlug(data.title), content: data.content || '', image: data.image || '', status: data.status || 'draft', author: data.author || 'admin', date: new Date().toISOString(), views: 0 };
     this.cache.materias.push(newMateria);
     this.addHistory(`Criou matéria: ${data.title}`);
     this.save();
     return newMateria;
   },
-
   editMateria(id, data) {
     const mat = this.cache.materias.find(m => m.id === id);
     if (mat) {
-      if (data.title) {
-        mat.title = data.title.trim();
-        mat.slug = this.generateSlug(data.title);
-      }
+      if (data.title) { mat.title = data.title.trim(); mat.slug = this.generateSlug(data.title); }
       if (data.category) mat.category = data.category;
       if (data.content) mat.content = data.content;
       if (data.image !== undefined) mat.image = data.image;
@@ -356,7 +253,6 @@ const Database = {
     }
     return false;
   },
-
   deleteMateria(id) {
     const idx = this.cache.materias.findIndex(m => m.id === id);
     if (idx > -1) {
@@ -369,23 +265,13 @@ const Database = {
     return false;
   },
 
-  // ============================================================
-  // MÉTODOS - USUÁRIOS
-  // ============================================================
   addUser(username, password, level, name) {
-    if (this.cache.users[username]) {
-      return false;
-    }
-    this.cache.users[username] = {
-      password: password,
-      level: level || 'editor',
-      name: name || username.charAt(0).toUpperCase() + username.slice(1)
-    };
+    if (this.cache.users[username]) return false;
+    this.cache.users[username] = { password: password, level: level || 'editor', name: name || username.charAt(0).toUpperCase() + username.slice(1) };
     this.addHistory(`Adicionou usuário: ${username} (${level})`);
     this.save();
     return true;
   },
-
   deleteUser(username) {
     if (username === 'admin') return false;
     delete this.cache.users[username];
@@ -394,64 +280,28 @@ const Database = {
     return true;
   },
 
-  // ============================================================
-  // MÉTODOS - CONFIGURAÇÕES
-  // ============================================================
   updateSettings(newSettings) {
     Object.keys(newSettings).forEach(key => {
-      if (this.cache.settings[key] !== undefined) {
-        this.cache.settings[key] = newSettings[key];
-      }
+      if (this.cache.settings[key] !== undefined) this.cache.settings[key] = newSettings[key];
     });
     this.addHistory('Atualizou configurações do site');
     this.save();
     return this.cache.settings;
   },
 
-  // ============================================================
-  // UTILITÁRIOS
-  // ============================================================
   generateSlug(text) {
-    return text
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-');
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
   },
-
   addHistory(message, user = 'admin') {
     if (!this.cache.history) this.cache.history = [];
-    this.cache.history.unshift({
-      message,
-      user: user || 'admin',
-      time: new Date().toISOString()
-    });
-    if (this.cache.history.length > 100) {
-      this.cache.history = this.cache.history.slice(0, 100);
-    }
+    this.cache.history.unshift({ message, user: user || 'admin', time: new Date().toISOString() });
+    if (this.cache.history.length > 100) this.cache.history = this.cache.history.slice(0, 100);
   },
 
-  // ============================================================
-  // INICIALIZAÇÃO
-  // ============================================================
   async init() {
     await this.load();
     return this;
   }
 };
-
-// ============================================================
-// INICIALIZAR
-// ============================================================
-let DB = null;
-
-(async function initDatabase() {
-  DB = await Database.init();
-  window.DB = DB;
-  console.log('📰 Database inicializado!');
-})();
 
 window.Database = Database;
