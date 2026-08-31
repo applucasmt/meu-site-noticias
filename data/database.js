@@ -1,13 +1,176 @@
 // ============================================================
-// BANCO DE DADOS REAL - PERSISTENTE (LocalStorage)
+// BANCO DE DADOS COM GOOGLE SHEETS
 // ============================================================
 
 const Database = {
   // ============================================================
-  // CONFIGURAÇÕES PADRÃO
+  // CONFIGURAÇÕES
   // ============================================================
-  defaults: {
-    settings: {
+  config: {
+    // COLOQUE AQUI O ID DA SUA PLANILHA
+    spreadsheetId: 'SEU_ID_DA_PLANILHA_AQUI',
+    // URL da API do Google Sheets
+    apiUrl: 'https://sheets.googleapis.com/v4/spreadsheets/'
+  },
+
+  // ============================================================
+  // DADOS EM CACHE
+  // ============================================================
+  cache: {
+    settings: null,
+    categories: [],
+    materias: [],
+    users: {},
+    history: [],
+    nextId: 1,
+    loaded: false
+  },
+
+  // ============================================================
+  // CARREGAR DADOS DO GOOGLE SHEETS
+  // ============================================================
+  async load() {
+    try {
+      console.log('📡 Carregando dados do Google Sheets...');
+      
+      // Carregar cada aba
+      const [settings, categories, materias, users] = await Promise.all([
+        this.fetchSheet('settings'),
+        this.fetchSheet('categories'),
+        this.fetchSheet('materias'),
+        this.fetchSheet('users')
+      ]);
+
+      // Processar dados
+      this.cache.settings = this.parseSettings(settings);
+      this.cache.categories = this.parseCategories(categories);
+      this.cache.materias = this.parseMaterias(materias);
+      this.cache.users = this.parseUsers(users);
+      this.cache.loaded = true;
+
+      // Calcular próximo ID
+      const maxId = this.cache.materias.reduce((max, m) => Math.max(max, m.id), 0);
+      this.cache.nextId = maxId + 1;
+
+      console.log('✅ Dados carregados do Google Sheets!');
+      console.log(`📂 ${this.cache.categories.length} categorias`);
+      console.log(`📄 ${this.cache.materias.length} matérias`);
+      console.log(`👤 ${Object.keys(this.cache.users).length} usuários`);
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Erro ao carregar dados do Google Sheets:', error);
+      // Tentar carregar do localStorage como fallback
+      return this.loadFromLocalStorage();
+    }
+  },
+
+  // ============================================================
+  // BUSCAR ABA DA PLANILHA
+  // ============================================================
+  async fetchSheet(sheetName) {
+    try {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.config.spreadsheetId}/values/${sheetName}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar aba ${sheetName}: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.values || [];
+    } catch (error) {
+      console.warn(`⚠️ Erro ao buscar aba ${sheetName}:`, error);
+      return [];
+    }
+  },
+
+  // ============================================================
+  // PARSE DOS DADOS
+  // ============================================================
+  parseSettings(data) {
+    if (!data || data.length < 2) return this.getDefaultSettings();
+    
+    const headers = data[0];
+    const values = data[1] || [];
+    
+    const settings = {};
+    headers.forEach((header, index) => {
+      settings[header.trim()] = values[index] || '';
+    });
+    
+    return settings;
+  },
+
+  parseCategories(data) {
+    if (!data || data.length < 2) return this.getDefaultCategories();
+    
+    const headers = data[0];
+    const categories = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const category = {};
+      headers.forEach((header, index) => {
+        const value = row[index] || '';
+        if (header === 'id') category.id = parseInt(value) || 0;
+        else if (header === 'active') category.active = value.toLowerCase() === 'true';
+        else if (header === 'order') category.order = parseInt(value) || 0;
+        else category[header] = value;
+      });
+      if (category.id) categories.push(category);
+    }
+    
+    return categories;
+  },
+
+  parseMaterias(data) {
+    if (!data || data.length < 2) return this.getDefaultMaterias();
+    
+    const headers = data[0];
+    const materias = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const materia = {};
+      headers.forEach((header, index) => {
+        const value = row[index] || '';
+        if (header === 'id') materia.id = parseInt(value) || 0;
+        else if (header === 'views') materia.views = parseInt(value) || 0;
+        else materia[header] = value;
+      });
+      if (materia.id) materias.push(materia);
+    }
+    
+    return materias;
+  },
+
+  parseUsers(data) {
+    if (!data || data.length < 2) return this.getDefaultUsers();
+    
+    const headers = data[0];
+    const users = {};
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const user = {};
+      let username = '';
+      headers.forEach((header, index) => {
+        const value = row[index] || '';
+        if (header === 'username') username = value;
+        else user[header] = value;
+      });
+      if (username) users[username] = user;
+    }
+    
+    return users;
+  },
+
+  // ============================================================
+  // DADOS PADRÃO (FALLBACK)
+  // ============================================================
+  getDefaultSettings() {
+    return {
       primaryColor: '#d32f2f',
       secondaryColor: '#1e2a3a',
       backgroundColor: '#f4f6f9',
@@ -19,8 +182,11 @@ const Database = {
       logoIcon: 'fa-newspaper',
       containerMaxWidth: '1280px',
       borderRadius: '1.5rem'
-    },
-    categories: [
+    };
+  },
+
+  getDefaultCategories() {
+    return [
       { id: 1, name: 'Política', slug: 'politica', icon: 'fa-gavel', active: true, order: 1 },
       { id: 2, name: 'Economia', slug: 'economia', icon: 'fa-chart-line', active: true, order: 2 },
       { id: 3, name: 'Tecnologia', slug: 'tecnologia', icon: 'fa-microchip', active: true, order: 3 },
@@ -28,8 +194,11 @@ const Database = {
       { id: 5, name: 'Cultura', slug: 'cultura', icon: 'fa-film', active: true, order: 5 },
       { id: 6, name: 'Esportes', slug: 'esportes', icon: 'fa-futbol', active: true, order: 6 },
       { id: 7, name: 'Internacional', slug: 'internacional', icon: 'fa-globe-americas', active: true, order: 7 }
-    ],
-    materias: [
+    ];
+  },
+
+  getDefaultMaterias() {
+    return [
       {
         id: 1,
         title: 'Governo anuncia novo pacote de incentivo à tecnologia verde',
@@ -41,109 +210,85 @@ const Database = {
         author: 'admin',
         date: new Date().toISOString(),
         views: 1250
-      },
-      {
-        id: 2,
-        title: 'Bolsa fecha em alta com otimismo no exterior',
-        category: 'Economia',
-        slug: 'bolsa-fecha-em-alta',
-        content: '<p>O Ibovespa fechou o dia em alta de 1,2% impulsionado por dados positivos dos EUA.</p>',
-        image: '',
-        status: 'published',
-        author: 'admin',
-        date: new Date(Date.now() - 3600000).toISOString(),
-        views: 980
-      },
-      {
-        id: 3,
-        title: 'Novo chip brasileiro promete eficiência energética',
-        category: 'Tecnologia',
-        slug: 'novo-chip-brasileiro',
-        content: '<p>Pesquisadores da Unicamp desenvolveram um novo chip que reduz o consumo de energia em até 40%.</p>',
-        image: '',
-        status: 'published',
-        author: 'admin',
-        date: new Date(Date.now() - 7200000).toISOString(),
-        views: 2100
       }
-    ],
-    users: {
+    ];
+  },
+
+  getDefaultUsers() {
+    return {
       'admin': { password: 'admin123', level: 'admin', name: 'Administrador' },
       'editor': { password: 'editor123', level: 'editor', name: 'Editor' }
-    },
-    history: [],
-    nextId: 4
+    };
   },
 
   // ============================================================
-  // DADOS REAIS
+  // LOCALSTORAGE (FALLBACK)
   // ============================================================
-  data: null,
-
-  // ============================================================
-  // INICIALIZAÇÃO
-  // ============================================================
-  init() {
-    const saved = localStorage.getItem('newsportal_db');
-    
-    if (saved) {
-      try {
-        this.data = JSON.parse(saved);
-        console.log('📦 Dados REAIS carregados do localStorage');
-        console.log(`📂 ${this.getCategories().length} categorias`);
-        console.log(`📄 ${this.getAllMaterias().length} matérias`);
-        console.log(`👤 ${Object.keys(this.getUsers()).length} usuários`);
-        
-        // Verificar e corrigir matérias com categoria inválida
-        this.fixInvalidCategories();
-        
-        return this;
-      } catch (e) {
-        console.warn('Erro ao carregar dados, usando padrão:', e);
+  loadFromLocalStorage() {
+    try {
+      const saved = localStorage.getItem('newsportal_db');
+      if (saved) {
+        const data = JSON.parse(saved);
+        this.cache.settings = data.settings || this.getDefaultSettings();
+        this.cache.categories = data.categories || this.getDefaultCategories();
+        this.cache.materias = data.materias || this.getDefaultMaterias();
+        this.cache.users = data.users || this.getDefaultUsers();
+        this.cache.loaded = true;
+        console.log('📦 Dados carregados do localStorage (fallback)');
+        return true;
       }
+    } catch (e) {
+      console.warn('Erro ao carregar localStorage:', e);
     }
+    return false;
+  },
 
-    console.log('📦 Criando dados REAIS pela primeira vez');
-    this.data = JSON.parse(JSON.stringify(this.defaults));
-    this.save();
-    return this;
+  saveToLocalStorage() {
+    try {
+      localStorage.setItem('newsportal_db', JSON.stringify({
+        settings: this.cache.settings,
+        categories: this.cache.categories,
+        materias: this.cache.materias,
+        users: this.cache.users,
+        history: this.cache.history
+      }));
+      console.log('💾 Dados salvos no localStorage');
+    } catch (e) {
+      console.warn('Erro ao salvar localStorage:', e);
+    }
   },
 
   // ============================================================
-  // CORRIGIR CATEGORIAS INVÁLIDAS
+  // SALVAR NO GOOGLE SHEETS (VIA Web App)
   // ============================================================
-  fixInvalidCategories() {
-    const validCategories = this.data.categories.map(c => c.name);
-    let fixed = 0;
-    
-    this.data.materias.forEach(m => {
-      if (!validCategories.includes(m.category)) {
-        console.warn(`⚠️ Matéria "${m.title}" tem categoria inválida: "${m.category}"`);
-        // Se a categoria não existe, colocar como "Política" (primeira categoria)
-        if (validCategories.length > 0) {
-          m.category = validCategories[0];
-          fixed++;
+  async save() {
+    try {
+      // Salvar localmente primeiro
+      this.saveToLocalStorage();
+      
+      // Tentar salvar no Google Sheets via Web App
+      if (this.config.webAppUrl) {
+        const response = await fetch(this.config.webAppUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settings: this.cache.settings,
+            categories: this.cache.categories,
+            materias: this.cache.materias,
+            users: this.cache.users,
+            history: this.cache.history
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Dados salvos no Google Sheets!');
+          return true;
         }
       }
-    });
-    
-    if (fixed > 0) {
-      console.log(`✅ Corrigidas ${fixed} matérias com categoria inválida`);
-      this.save();
-    }
-  },
-
-  // ============================================================
-  // PERSISTÊNCIA
-  // ============================================================
-  save() {
-    try {
-      localStorage.setItem('newsportal_db', JSON.stringify(this.data));
-      console.log('💾 Dados REAIS salvos no localStorage');
       return true;
-    } catch (e) {
-      console.error('❌ Erro ao salvar dados:', e);
-      return false;
+    } catch (error) {
+      console.warn('⚠️ Erro ao salvar no Google Sheets:', error);
+      return true;
     }
   },
 
@@ -151,23 +296,23 @@ const Database = {
   // GETTERS
   // ============================================================
   getSettings() {
-    return this.data.settings;
+    return this.cache.settings || this.getDefaultSettings();
   },
 
   getCategories() {
-    return this.data.categories.filter(c => c.active).sort((a, b) => a.order - b.order);
+    return (this.cache.categories || []).filter(c => c.active).sort((a, b) => a.order - b.order);
   },
 
   getAllCategories() {
-    return this.data.categories.sort((a, b) => a.order - b.order);
+    return (this.cache.categories || []).sort((a, b) => a.order - b.order);
   },
 
   getCategoryBySlug(slug) {
-    return this.data.categories.find(c => c.slug === slug && c.active);
+    return (this.cache.categories || []).find(c => c.slug === slug && c.active);
   },
 
   getMaterias(categorySlug = null) {
-    let result = this.data.materias.filter(m => m.status === 'published');
+    let result = (this.cache.materias || []).filter(m => m.status === 'published');
     if (categorySlug) {
       const cat = this.getCategoryBySlug(categorySlug);
       if (cat) {
@@ -178,19 +323,19 @@ const Database = {
   },
 
   getAllMaterias() {
-    return this.data.materias.sort((a, b) => new Date(b.date) - new Date(a.date));
+    return (this.cache.materias || []).sort((a, b) => new Date(b.date) - new Date(a.date));
   },
 
   getMateriaById(id) {
-    return this.data.materias.find(m => m.id === id);
+    return (this.cache.materias || []).find(m => m.id === id);
   },
 
   getUsers() {
-    return this.data.users;
+    return this.cache.users || this.getDefaultUsers();
   },
 
   getHistory() {
-    return this.data.history || [];
+    return this.cache.history || [];
   },
 
   // ============================================================
@@ -198,23 +343,23 @@ const Database = {
   // ============================================================
   addCategory(name, icon = 'fa-tag') {
     const slug = this.generateSlug(name);
-    const maxOrder = Math.max(...this.data.categories.map(c => c.order), 0);
+    const maxOrder = Math.max(...this.cache.categories.map(c => c.order), 0);
     const newCategory = {
-      id: this.data.nextId++,
+      id: this.cache.nextId++,
       name: name.trim(),
       slug,
       icon: icon.trim() || 'fa-tag',
       active: true,
       order: maxOrder + 1
     };
-    this.data.categories.push(newCategory);
+    this.cache.categories.push(newCategory);
     this.addHistory(`Criou categoria: ${name}`);
     this.save();
     return newCategory;
   },
 
   editCategory(id, data) {
-    const cat = this.data.categories.find(c => c.id === id);
+    const cat = this.cache.categories.find(c => c.id === id);
     if (cat) {
       if (data.name) {
         cat.name = data.name.trim();
@@ -230,7 +375,7 @@ const Database = {
   },
 
   deleteCategory(id) {
-    const cat = this.data.categories.find(c => c.id === id);
+    const cat = this.cache.categories.find(c => c.id === id);
     if (cat) {
       cat.active = false;
       this.addHistory(`Desativou categoria: ${cat.name}`);
@@ -242,7 +387,7 @@ const Database = {
 
   reorderCategories(orderedIds) {
     orderedIds.forEach((id, index) => {
-      const cat = this.data.categories.find(c => c.id === id);
+      const cat = this.cache.categories.find(c => c.id === id);
       if (cat) cat.order = index + 1;
     });
     this.addHistory('Reordenou categorias');
@@ -254,7 +399,7 @@ const Database = {
   // ============================================================
   addMateria(data) {
     const newMateria = {
-      id: this.data.nextId++,
+      id: this.cache.nextId++,
       title: data.title.trim(),
       category: data.category,
       slug: this.generateSlug(data.title),
@@ -265,14 +410,14 @@ const Database = {
       date: new Date().toISOString(),
       views: 0
     };
-    this.data.materias.push(newMateria);
+    this.cache.materias.push(newMateria);
     this.addHistory(`Criou matéria: ${data.title}`);
     this.save();
     return newMateria;
   },
 
   editMateria(id, data) {
-    const mat = this.data.materias.find(m => m.id === id);
+    const mat = this.cache.materias.find(m => m.id === id);
     if (mat) {
       if (data.title) {
         mat.title = data.title.trim();
@@ -290,10 +435,10 @@ const Database = {
   },
 
   deleteMateria(id) {
-    const idx = this.data.materias.findIndex(m => m.id === id);
+    const idx = this.cache.materias.findIndex(m => m.id === id);
     if (idx > -1) {
-      const title = this.data.materias[idx].title;
-      this.data.materias.splice(idx, 1);
+      const title = this.cache.materias[idx].title;
+      this.cache.materias.splice(idx, 1);
       this.addHistory(`Excluiu matéria: ${title}`);
       this.save();
       return true;
@@ -305,10 +450,10 @@ const Database = {
   // MÉTODOS - USUÁRIOS
   // ============================================================
   addUser(username, password, level, name) {
-    if (this.data.users[username]) {
+    if (this.cache.users[username]) {
       return false;
     }
-    this.data.users[username] = {
+    this.cache.users[username] = {
       password: password,
       level: level || 'editor',
       name: name || username.charAt(0).toUpperCase() + username.slice(1)
@@ -320,7 +465,7 @@ const Database = {
 
   deleteUser(username) {
     if (username === 'admin') return false;
-    delete this.data.users[username];
+    delete this.cache.users[username];
     this.addHistory(`Removeu usuário: ${username}`);
     this.save();
     return true;
@@ -331,13 +476,13 @@ const Database = {
   // ============================================================
   updateSettings(newSettings) {
     Object.keys(newSettings).forEach(key => {
-      if (this.data.settings[key] !== undefined) {
-        this.data.settings[key] = newSettings[key];
+      if (this.cache.settings[key] !== undefined) {
+        this.cache.settings[key] = newSettings[key];
       }
     });
     this.addHistory('Atualizou configurações do site');
     this.save();
-    return this.data.settings;
+    return this.cache.settings;
   },
 
   // ============================================================
@@ -355,68 +500,56 @@ const Database = {
   },
 
   addHistory(message, user = 'admin') {
-    if (!this.data.history) this.data.history = [];
-    this.data.history.unshift({
+    if (!this.cache.history) this.cache.history = [];
+    this.cache.history.unshift({
       message,
       user: user || 'admin',
       time: new Date().toISOString()
     });
-    if (this.data.history.length > 100) {
-      this.data.history = this.data.history.slice(0, 100);
+    if (this.cache.history.length > 100) {
+      this.cache.history = this.cache.history.slice(0, 100);
     }
   },
 
   // ============================================================
-  // RESETAR E EXPORTAR
+  // FUNÇÃO PARA CORRIGIR MATÉRIA
   // ============================================================
-  resetToDefaults() {
-    this.data = JSON.parse(JSON.stringify(this.defaults));
-    this.save();
-    console.log('🔄 Dados resetados para o padrão');
-    return this.data;
-  },
-
-  exportData() {
-    return JSON.stringify(this.data, null, 2);
-  },
-
-  importData(jsonData) {
-    try {
-      const parsed = JSON.parse(jsonData);
-      this.data = parsed;
+  fixMateriaCategoria(id, newCategory) {
+    const materia = this.getMateriaById(id);
+    if (materia) {
+      const oldCat = materia.category;
+      materia.category = newCategory;
       this.save();
-      console.log('📥 Dados importados com sucesso!');
+      console.log(`✅ Matéria "${materia.title}" movida de "${oldCat}" para "${newCategory}"`);
       return true;
-    } catch (e) {
-      console.error('❌ Erro ao importar dados:', e);
-      return false;
     }
+    console.log(`⚠️ Matéria ID ${id} não encontrada`);
+    return false;
+  },
+
+  // ============================================================
+  // INICIALIZAÇÃO
+  // ============================================================
+  async init() {
+    // Configurar URL do Web App (se disponível)
+    // this.config.webAppUrl = 'https://script.google.com/macros/s/SEU_SCRIPT_ID/exec';
+    
+    await this.load();
+    return this;
   }
 };
 
 // ============================================================
-// INICIALIZAR E EXPORTAR
+// EXPORTAR
 // ============================================================
-const DB = Database.init();
+let DB = null;
 
-// Adicionar método de correção para debug
-DB.fixMateriaCategoria = function(id, newCategory) {
-  const materia = this.getMateriaById(id);
-  if (materia) {
-    const oldCat = materia.category;
-    materia.category = newCategory;
-    this.save();
-    console.log(`✅ Matéria "${materia.title}" movida de "${oldCat}" para "${newCategory}"`);
-    return true;
-  }
-  console.log(`⚠️ Matéria ID ${id} não encontrada`);
-  return false;
-};
+// Inicializar assíncrono
+(async function() {
+  DB = await Database.init();
+  window.DB = DB;
+  console.log('📰 Database inicializado com Google Sheets!');
+})();
 
 // Disponibilizar globalmente
-window.DB = DB;
-
-console.log('📰 Database REAL inicializado com sucesso!');
-console.log(`📂 ${DB.getCategories().length} categorias ativas`);
-console.log(`📄 ${DB.getMaterias().length} matérias publicadas`);
-console.log(`👤 ${Object.keys(DB.getUsers()).length} usuários`);
+window.Database = Database;
