@@ -870,12 +870,6 @@
   // ADMIN - JAVASCRIPT COMPLETO E CORRIGIDO
   // ============================================================
 
-  if (typeof DB === 'undefined') {
-    alert('❌ Erro: Banco de dados não carregado!');
-  } else {
-    console.log('✅ DB carregado com sucesso!');
-  }
-
   let editingMateriaId = null;
 
   // ============================================================
@@ -913,9 +907,9 @@
   // DASHBOARD
   // ============================================================
   function updateDashboard() {
-    const materias = DB.getAllMaterias();
+    const materias = window.DB.getAllMaterias();
     const published = materias.filter(m => m.status === 'published');
-    const categories = DB.getCategories();
+    const categories = window.DB.getCategories();
     const totalViews = materias.reduce((sum, m) => sum + (m.views || 0), 0);
 
     document.getElementById('totalMaterias').textContent = published.length;
@@ -943,7 +937,7 @@
   // PERSONALIZAÇÃO
   // ============================================================
   function loadSettings() {
-    const settings = DB.getSettings();
+    const settings = window.DB.getSettings();
     
     document.getElementById('primaryColor').value = settings.primaryColor;
     document.getElementById('primaryColorText').value = settings.primaryColor;
@@ -1014,7 +1008,7 @@
       borderRadius: document.getElementById('borderRadius').value
     };
 
-    DB.updateSettings(settings);
+    window.DB.updateSettings(settings);
     alert('✅ Configurações salvas com sucesso!');
     if (confirm('Deseja visualizar o site com as novas configurações?')) {
       window.location.href = 'index.html';
@@ -1026,7 +1020,7 @@
   // ============================================================
   function renderCategories() {
     const tbody = document.getElementById('categoriesBody');
-    const categories = DB.getAllCategories();
+    const categories = window.DB.getAllCategories();
     
     tbody.innerHTML = categories.map(cat => `
       <tr data-id="${cat.id}" draggable="true">
@@ -1091,29 +1085,29 @@
     document.addEventListener('dragend', () => {
       const rows = document.querySelectorAll('#categoriesBody tr');
       const orderedIds = Array.from(rows).map(row => parseInt(row.dataset.id));
-      DB.reorderCategories(orderedIds);
+      window.DB.reorderCategories(orderedIds);
       renderCategories();
     });
   }
 
   function updateCategoryName(id, newName) {
     if (newName.trim()) {
-      DB.editCategory(id, { name: newName.trim() });
+      window.DB.editCategory(id, { name: newName.trim() });
       renderCategories();
     }
   }
 
   function toggleCategoryStatus(id) {
-    const cat = DB.categories.find(c => c.id === id);
+    const cat = window.DB.cache.categories.find(c => c.id === id);
     if (cat) {
-      DB.editCategory(id, { active: !cat.active });
+      window.DB.editCategory(id, { active: !cat.active });
       renderCategories();
     }
   }
 
   function deleteCategory(id) {
     if (confirm('Tem certeza que deseja desativar esta categoria?')) {
-      DB.deleteCategory(id);
+      window.DB.deleteCategory(id);
       renderCategories();
     }
   }
@@ -1124,7 +1118,7 @@
     const icon = document.getElementById('catIcon').value.trim() || 'fa-tag';
     
     if (name) {
-      DB.addCategory(name, icon);
+      window.DB.addCategory(name, icon);
       document.getElementById('catName').value = '';
       document.getElementById('catIcon').value = 'fa-tag';
       renderCategories();
@@ -1132,11 +1126,11 @@
   });
 
   // ============================================================
-  // MATÉRIAS (COM BOTÃO EDITAR FUNCIONANDO)
+  // MATÉRIAS
   // ============================================================
   function renderMateriasAdmin() {
     const list = document.getElementById('materiasListAdmin');
-    const materias = DB.getAllMaterias();
+    const materias = window.DB.getAllMaterias();
     
     list.innerHTML = materias.map(m => `
       <div class="materia-item">
@@ -1155,12 +1149,8 @@
     `).join('');
   }
 
-  // ============================================================
-  // EDITAR MATÉRIA - FUNÇÃO CORRIGIDA
-  // ============================================================
   function editMateria(id) {
-    console.log('✏️ Editando matéria ID:', id);
-    const materia = DB.getMateriaById(id);
+    const materia = window.DB.getMateriaById(id);
     
     if (!materia) {
       alert('❌ Matéria não encontrada!');
@@ -1175,7 +1165,6 @@
     document.getElementById('editorModal').classList.add('visible');
     
     populateCategorySelect(materia.category);
-    console.log('✅ Matéria carregada para edição:', materia.title);
   }
 
   function openEditor() {
@@ -1195,7 +1184,7 @@
 
   function populateCategorySelect(selected = null) {
     const select = document.getElementById('editCategory');
-    const categories = DB.getCategories();
+    const categories = window.DB.getCategories();
     select.innerHTML = categories.map(c => `
       <option value="${c.name}" ${c.name === selected ? 'selected' : ''}>${c.name}</option>
     `).join('');
@@ -1225,10 +1214,10 @@
     const data = { title, category, image, content, status };
 
     if (editingMateriaId) {
-      DB.editMateria(editingMateriaId, data);
+      window.DB.editMateria(editingMateriaId, data);
       alert('✅ Matéria atualizada com sucesso!');
     } else {
-      DB.addMateria(data);
+      window.DB.addMateria(data);
       alert('✅ Matéria criada com sucesso!');
     }
 
@@ -1239,7 +1228,7 @@
 
   function deleteMateria(id) {
     if (confirm('Tem certeza que deseja excluir esta matéria?')) {
-      DB.deleteMateria(id);
+      window.DB.deleteMateria(id);
       renderMateriasAdmin();
       updateDashboard();
     }
@@ -1250,7 +1239,7 @@
   // ============================================================
   function renderUsers() {
     const list = document.getElementById('usersList');
-    const users = DB.getUsers();
+    const users = window.DB.getUsers();
     list.innerHTML = Object.entries(users).map(([username, data]) => `
       <div class="user-item">
         <div>
@@ -1277,7 +1266,7 @@
       return;
     }
 
-    const success = DB.addUser(username, password, level);
+    const success = window.DB.addUser(username, password, level);
     if (!success) {
       alert('Usuário já existe!');
       return;
@@ -1294,7 +1283,7 @@
       return;
     }
     if (confirm(`Remover usuário "${username}"?`)) {
-      DB.deleteUser(username);
+      window.DB.deleteUser(username);
       renderUsers();
     }
   }
@@ -1304,7 +1293,7 @@
   // ============================================================
   function renderHistory() {
     const list = document.getElementById('historyListAdmin');
-    list.innerHTML = DB.history.slice(0, 30).map(item => `
+    list.innerHTML = window.DB.getHistory().slice(0, 30).map(item => `
       <div class="history-item">
         <span><strong>${item.user}</strong> ${item.message}</span>
         <span class="h-time">${formatDate(item.time)}</span>
@@ -1322,19 +1311,20 @@
   }
 
   // ============================================================
-  // INICIALIZAÇÃO
+  // INICIALIZAÇÃO CORRIGIDA (AGUARDA O DB.INIT)
   // ============================================================
-  document.addEventListener('DOMContentLoaded', function() {
-    // Verificar se o DB está carregado
-    if (typeof DB === 'undefined') {
-      alert('❌ Banco de dados não encontrado! Recarregue a página.');
+  document.addEventListener('DOMContentLoaded', async function() {
+    
+    // Verificar se a classe Database global está disponível
+    if (typeof Database === 'undefined') {
+      alert('❌ Banco de dados não encontrado! Verifique se database.js está vinculado corretamente.');
       return;
     }
 
-    // Garantir que os dados estão carregados
-    DB.init();
+    // Inicializa e carrega os dados garantindo a conclusão antes de preencher a tela
+    window.DB = await Database.init();
     
-    // Renderizar tudo
+    // Renderizar tudo após a confirmação de que os dados existem
     updateDashboard();
     loadSettings();
     renderCategories();
@@ -1343,9 +1333,8 @@
     renderHistory();
 
     console.log('🔐 Painel Admin carregado com sucesso!');
-    console.log(`📂 ${DB.getCategories().length} categorias`);
-    console.log(`📄 ${DB.getAllMaterias().length} matérias`);
-    console.log('✅ Botão Editar está funcionando corretamente!');
+    console.log(`📂 ${window.DB.getCategories().length} categorias`);
+    console.log(`📄 ${window.DB.getAllMaterias().length} matérias`);
   });
 
 </script>
