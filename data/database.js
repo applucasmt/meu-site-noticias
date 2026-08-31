@@ -7,10 +7,9 @@ const Database = {
   // CONFIGURAÇÕES
   // ============================================================
   config: {
-    // COLOQUE AQUI O ID DA SUA PLANILHA
-    spreadsheetId: 'SEU_ID_DA_PLANILHA_AQUI',
-    // URL da API do Google Sheets
-    apiUrl: 'https://sheets.googleapis.com/v4/spreadsheets/'
+    // COLOQUE A URL DO SEU WEB APP AQUI
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbzdzU573JpmwMARvW4tOZl1yTAT18EaRnmRCUD7CVW0t_TsvJc9nNPzqv6Q1AR1gwOcaA/exec',
+    spreadsheetId: '1SGCgIuSa6Yi0ICJFX6hoWflwX1B2JVfWb6BrYdECq0w'
   },
 
   // ============================================================
@@ -22,7 +21,6 @@ const Database = {
     materias: [],
     users: {},
     history: [],
-    nextId: 1,
     loaded: false
   },
 
@@ -33,137 +31,102 @@ const Database = {
     try {
       console.log('📡 Carregando dados do Google Sheets...');
       
-      // Carregar cada aba
-      const [settings, categories, materias, users] = await Promise.all([
-        this.fetchSheet('settings'),
-        this.fetchSheet('categories'),
-        this.fetchSheet('materias'),
-        this.fetchSheet('users')
-      ]);
-
-      // Processar dados
-      this.cache.settings = this.parseSettings(settings);
-      this.cache.categories = this.parseCategories(categories);
-      this.cache.materias = this.parseMaterias(materias);
-      this.cache.users = this.parseUsers(users);
+      const response = await fetch(`${this.config.webAppUrl}?action=getAllData`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success === false) {
+        throw new Error(data.error || 'Erro ao carregar dados');
+      }
+      
+      this.cache.settings = data.settings || this.getDefaultSettings();
+      this.cache.categories = data.categories || this.getDefaultCategories();
+      this.cache.materias = data.materias || this.getDefaultMaterias();
+      this.cache.users = data.users || this.getDefaultUsers();
+      this.cache.history = data.history || [];
       this.cache.loaded = true;
-
-      // Calcular próximo ID
-      const maxId = this.cache.materias.reduce((max, m) => Math.max(max, m.id), 0);
-      this.cache.nextId = maxId + 1;
-
+      
       console.log('✅ Dados carregados do Google Sheets!');
       console.log(`📂 ${this.cache.categories.length} categorias`);
       console.log(`📄 ${this.cache.materias.length} matérias`);
       console.log(`👤 ${Object.keys(this.cache.users).length} usuários`);
       
       return true;
+      
     } catch (error) {
       console.error('❌ Erro ao carregar dados do Google Sheets:', error);
-      // Tentar carregar do localStorage como fallback
       return this.loadFromLocalStorage();
     }
   },
 
   // ============================================================
-  // BUSCAR ABA DA PLANILHA
+  // LOCALSTORAGE (FALLBACK)
   // ============================================================
-  async fetchSheet(sheetName) {
+  loadFromLocalStorage() {
     try {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.config.spreadsheetId}/values/${sheetName}`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar aba ${sheetName}: ${response.status}`);
+      const saved = localStorage.getItem('newsportal_db');
+      if (saved) {
+        const data = JSON.parse(saved);
+        this.cache.settings = data.settings || this.getDefaultSettings();
+        this.cache.categories = data.categories || this.getDefaultCategories();
+        this.cache.materias = data.materias || this.getDefaultMaterias();
+        this.cache.users = data.users || this.getDefaultUsers();
+        this.cache.history = data.history || [];
+        this.cache.loaded = true;
+        console.log('📦 Dados carregados do localStorage (fallback)');
+        return true;
       }
+    } catch (e) {
+      console.warn('Erro ao carregar localStorage:', e);
+    }
+    return false;
+  },
+
+  saveToLocalStorage() {
+    try {
+      localStorage.setItem('newsportal_db', JSON.stringify({
+        settings: this.cache.settings,
+        categories: this.cache.categories,
+        materias: this.cache.materias,
+        users: this.cache.users,
+        history: this.cache.history
+      }));
+      console.log('💾 Dados salvos no localStorage');
+    } catch (e) {
+      console.warn('Erro ao salvar localStorage:', e);
+    }
+  },
+
+  // ============================================================
+  // SALVAR NO GOOGLE SHEETS
+  // ============================================================
+  async save() {
+    try {
+      this.saveToLocalStorage();
       
-      const data = await response.json();
-      return data.values || [];
+      const response = await fetch(this.config.webAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'updateSettings',
+          settings: this.cache.settings
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ Dados salvos no Google Sheets!');
+        return true;
+      }
+      return true;
+      
     } catch (error) {
-      console.warn(`⚠️ Erro ao buscar aba ${sheetName}:`, error);
-      return [];
+      console.warn('⚠️ Erro ao salvar no Google Sheets:', error);
+      return true;
     }
-  },
-
-  // ============================================================
-  // PARSE DOS DADOS
-  // ============================================================
-  parseSettings(data) {
-    if (!data || data.length < 2) return this.getDefaultSettings();
-    
-    const headers = data[0];
-    const values = data[1] || [];
-    
-    const settings = {};
-    headers.forEach((header, index) => {
-      settings[header.trim()] = values[index] || '';
-    });
-    
-    return settings;
-  },
-
-  parseCategories(data) {
-    if (!data || data.length < 2) return this.getDefaultCategories();
-    
-    const headers = data[0];
-    const categories = [];
-    
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      const category = {};
-      headers.forEach((header, index) => {
-        const value = row[index] || '';
-        if (header === 'id') category.id = parseInt(value) || 0;
-        else if (header === 'active') category.active = value.toLowerCase() === 'true';
-        else if (header === 'order') category.order = parseInt(value) || 0;
-        else category[header] = value;
-      });
-      if (category.id) categories.push(category);
-    }
-    
-    return categories;
-  },
-
-  parseMaterias(data) {
-    if (!data || data.length < 2) return this.getDefaultMaterias();
-    
-    const headers = data[0];
-    const materias = [];
-    
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      const materia = {};
-      headers.forEach((header, index) => {
-        const value = row[index] || '';
-        if (header === 'id') materia.id = parseInt(value) || 0;
-        else if (header === 'views') materia.views = parseInt(value) || 0;
-        else materia[header] = value;
-      });
-      if (materia.id) materias.push(materia);
-    }
-    
-    return materias;
-  },
-
-  parseUsers(data) {
-    if (!data || data.length < 2) return this.getDefaultUsers();
-    
-    const headers = data[0];
-    const users = {};
-    
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      const user = {};
-      let username = '';
-      headers.forEach((header, index) => {
-        const value = row[index] || '';
-        if (header === 'username') username = value;
-        else user[header] = value;
-      });
-      if (username) users[username] = user;
-    }
-    
-    return users;
   },
 
   // ============================================================
@@ -222,77 +185,6 @@ const Database = {
   },
 
   // ============================================================
-  // LOCALSTORAGE (FALLBACK)
-  // ============================================================
-  loadFromLocalStorage() {
-    try {
-      const saved = localStorage.getItem('newsportal_db');
-      if (saved) {
-        const data = JSON.parse(saved);
-        this.cache.settings = data.settings || this.getDefaultSettings();
-        this.cache.categories = data.categories || this.getDefaultCategories();
-        this.cache.materias = data.materias || this.getDefaultMaterias();
-        this.cache.users = data.users || this.getDefaultUsers();
-        this.cache.loaded = true;
-        console.log('📦 Dados carregados do localStorage (fallback)');
-        return true;
-      }
-    } catch (e) {
-      console.warn('Erro ao carregar localStorage:', e);
-    }
-    return false;
-  },
-
-  saveToLocalStorage() {
-    try {
-      localStorage.setItem('newsportal_db', JSON.stringify({
-        settings: this.cache.settings,
-        categories: this.cache.categories,
-        materias: this.cache.materias,
-        users: this.cache.users,
-        history: this.cache.history
-      }));
-      console.log('💾 Dados salvos no localStorage');
-    } catch (e) {
-      console.warn('Erro ao salvar localStorage:', e);
-    }
-  },
-
-  // ============================================================
-  // SALVAR NO GOOGLE SHEETS (VIA Web App)
-  // ============================================================
-  async save() {
-    try {
-      // Salvar localmente primeiro
-      this.saveToLocalStorage();
-      
-      // Tentar salvar no Google Sheets via Web App
-      if (this.config.webAppUrl) {
-        const response = await fetch(this.config.webAppUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            settings: this.cache.settings,
-            categories: this.cache.categories,
-            materias: this.cache.materias,
-            users: this.cache.users,
-            history: this.cache.history
-          })
-        });
-        
-        if (response.ok) {
-          console.log('✅ Dados salvos no Google Sheets!');
-          return true;
-        }
-      }
-      return true;
-    } catch (error) {
-      console.warn('⚠️ Erro ao salvar no Google Sheets:', error);
-      return true;
-    }
-  },
-
-  // ============================================================
   // GETTERS
   // ============================================================
   getSettings() {
@@ -341,11 +233,11 @@ const Database = {
   // ============================================================
   // MÉTODOS - CATEGORIAS
   // ============================================================
-  addCategory(name, icon = 'fa-tag') {
+  async addCategory(name, icon = 'fa-tag') {
     const slug = this.generateSlug(name);
     const maxOrder = Math.max(...this.cache.categories.map(c => c.order), 0);
     const newCategory = {
-      id: this.cache.nextId++,
+      id: this.cache.categories.length + 1,
       name: name.trim(),
       slug,
       icon: icon.trim() || 'fa-tag',
@@ -354,7 +246,7 @@ const Database = {
     };
     this.cache.categories.push(newCategory);
     this.addHistory(`Criou categoria: ${name}`);
-    this.save();
+    await this.save();
     return newCategory;
   },
 
@@ -367,189 +259,4 @@ const Database = {
       }
       if (data.icon) cat.icon = data.icon.trim();
       if (data.active !== undefined) cat.active = data.active;
-      this.addHistory(`Editou categoria: ${cat.name}`);
-      this.save();
-      return true;
-    }
-    return false;
-  },
-
-  deleteCategory(id) {
-    const cat = this.cache.categories.find(c => c.id === id);
-    if (cat) {
-      cat.active = false;
-      this.addHistory(`Desativou categoria: ${cat.name}`);
-      this.save();
-      return true;
-    }
-    return false;
-  },
-
-  reorderCategories(orderedIds) {
-    orderedIds.forEach((id, index) => {
-      const cat = this.cache.categories.find(c => c.id === id);
-      if (cat) cat.order = index + 1;
-    });
-    this.addHistory('Reordenou categorias');
-    this.save();
-  },
-
-  // ============================================================
-  // MÉTODOS - MATÉRIAS
-  // ============================================================
-  addMateria(data) {
-    const newMateria = {
-      id: this.cache.nextId++,
-      title: data.title.trim(),
-      category: data.category,
-      slug: this.generateSlug(data.title),
-      content: data.content || '',
-      image: data.image || '',
-      status: data.status || 'draft',
-      author: data.author || 'admin',
-      date: new Date().toISOString(),
-      views: 0
-    };
-    this.cache.materias.push(newMateria);
-    this.addHistory(`Criou matéria: ${data.title}`);
-    this.save();
-    return newMateria;
-  },
-
-  editMateria(id, data) {
-    const mat = this.cache.materias.find(m => m.id === id);
-    if (mat) {
-      if (data.title) {
-        mat.title = data.title.trim();
-        mat.slug = this.generateSlug(data.title);
-      }
-      if (data.category) mat.category = data.category;
-      if (data.content) mat.content = data.content;
-      if (data.image !== undefined) mat.image = data.image;
-      if (data.status) mat.status = data.status;
-      this.addHistory(`Editou matéria: ${mat.title}`);
-      this.save();
-      return true;
-    }
-    return false;
-  },
-
-  deleteMateria(id) {
-    const idx = this.cache.materias.findIndex(m => m.id === id);
-    if (idx > -1) {
-      const title = this.cache.materias[idx].title;
-      this.cache.materias.splice(idx, 1);
-      this.addHistory(`Excluiu matéria: ${title}`);
-      this.save();
-      return true;
-    }
-    return false;
-  },
-
-  // ============================================================
-  // MÉTODOS - USUÁRIOS
-  // ============================================================
-  addUser(username, password, level, name) {
-    if (this.cache.users[username]) {
-      return false;
-    }
-    this.cache.users[username] = {
-      password: password,
-      level: level || 'editor',
-      name: name || username.charAt(0).toUpperCase() + username.slice(1)
-    };
-    this.addHistory(`Adicionou usuário: ${username} (${level})`);
-    this.save();
-    return true;
-  },
-
-  deleteUser(username) {
-    if (username === 'admin') return false;
-    delete this.cache.users[username];
-    this.addHistory(`Removeu usuário: ${username}`);
-    this.save();
-    return true;
-  },
-
-  // ============================================================
-  // MÉTODOS - CONFIGURAÇÕES
-  // ============================================================
-  updateSettings(newSettings) {
-    Object.keys(newSettings).forEach(key => {
-      if (this.cache.settings[key] !== undefined) {
-        this.cache.settings[key] = newSettings[key];
-      }
-    });
-    this.addHistory('Atualizou configurações do site');
-    this.save();
-    return this.cache.settings;
-  },
-
-  // ============================================================
-  // UTILITÁRIOS
-  // ============================================================
-  generateSlug(text) {
-    return text
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-');
-  },
-
-  addHistory(message, user = 'admin') {
-    if (!this.cache.history) this.cache.history = [];
-    this.cache.history.unshift({
-      message,
-      user: user || 'admin',
-      time: new Date().toISOString()
-    });
-    if (this.cache.history.length > 100) {
-      this.cache.history = this.cache.history.slice(0, 100);
-    }
-  },
-
-  // ============================================================
-  // FUNÇÃO PARA CORRIGIR MATÉRIA
-  // ============================================================
-  fixMateriaCategoria(id, newCategory) {
-    const materia = this.getMateriaById(id);
-    if (materia) {
-      const oldCat = materia.category;
-      materia.category = newCategory;
-      this.save();
-      console.log(`✅ Matéria "${materia.title}" movida de "${oldCat}" para "${newCategory}"`);
-      return true;
-    }
-    console.log(`⚠️ Matéria ID ${id} não encontrada`);
-    return false;
-  },
-
-  // ============================================================
-  // INICIALIZAÇÃO
-  // ============================================================
-  async init() {
-    // Configurar URL do Web App (se disponível)
-    // this.config.webAppUrl = 'https://script.google.com/macros/s/SEU_SCRIPT_ID/exec';
-    
-    await this.load();
-    return this;
-  }
-};
-
-// ============================================================
-// EXPORTAR
-// ============================================================
-let DB = null;
-
-// Inicializar assíncrono
-(async function() {
-  DB = await Database.init();
-  window.DB = DB;
-  console.log('📰 Database inicializado com Google Sheets!');
-})();
-
-// Disponibilizar globalmente
-window.Database = Database;
+      this.addHistory(`Editou
