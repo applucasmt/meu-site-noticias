@@ -31,13 +31,8 @@
     .main-nav a { padding: 0.3rem 0; font-size: 0.95rem; color: #2c3e50; border-bottom: 3px solid transparent; transition: all 0.3s; }
     .main-nav a:hover { border-bottom-color: #d32f2f; color: #0b1a2a; }
     .main-nav .active { border-bottom-color: #d32f2f; color: #0b1a2a; }
-
-    /* REGRAS DE ÍCONES ADICIONADAS */
     .main-nav a i { margin-right: 4px; font-size: 0.8rem; opacity: 0.7; transition: color 0.3s;}
     .main-nav a.active i { opacity: 1; color: #d32f2f; }
-    .main-nav .admin-link { background: #d32f2f; color: white !important; padding: 0.2rem 0.8rem; border-radius: 20px; border-bottom-color: transparent !important; }
-    .main-nav .admin-link:hover { background: #b71c1c; border-bottom-color: transparent !important; }
-    .main-nav .admin-link i { color: white !important; opacity: 1; }
     
     .noticia-container { max-width: 820px; margin: 0 auto; padding: 1rem 0 2rem; }
     .noticia-header { margin-bottom: 1.5rem; }
@@ -139,10 +134,8 @@
     (function() {
       'use strict';
 
-      // Pega o ID da notícia na inicialização
       const urlParams = new URLSearchParams(window.location.search);
       const noticiaId = parseInt(urlParams.get('id')) || 0;
-      console.log(`🔍 Buscando notícia ID: ${noticiaId}`);
 
       function applySettings() {
         const settings = window.DB.getSettings();
@@ -197,7 +190,6 @@
         const container = document.getElementById('noticiaContainer');
         if (!container) return;
 
-        // UTILIZANDO A FUNÇÃO GET CORRETA DO database.js
         const materia = window.DB.getMateriaById(noticiaId);
 
         if (!materia || materia.status !== 'published') {
@@ -217,7 +209,7 @@
 
         document.title = `NewsPortal · ${materia.title}`;
 
-        const cat = window.DB.categories.find(c => c.name === materia.category);
+        const cat = window.DB.getCategories().find(c => c.name === materia.category);
         const icon = cat ? (cat.icon || 'fa-tag') : 'fa-tag';
 
         const date = new Date(materia.date);
@@ -281,10 +273,8 @@
 
         container.innerHTML = html;
 
-        // Incrementar visualizações silenciosamente
         materia.views = (materia.views || 0) + 1;
         window.DB.save();
-        console.log(`👁️ Visualizações atualizadas: ${materia.views}`);
       }
 
       function setupSearch() {
@@ -318,24 +308,18 @@
       document.addEventListener('keyup', (e) => { if (e.key === 'Control') { ctrlPressed = false; setTimeout(() => { if (!ctrlPressed && lockIcon) { lockIcon.classList.remove('visible'); } }, 300); } });
       if (lockIcon) { lockIcon.addEventListener('click', () => { window.location.href = 'admin.html'; }); }
 
-      // ============================================================
-      // INICIALIZAÇÃO CORRIGIDA (AGUARDA O DB.INIT)
-      // ============================================================
       document.addEventListener('DOMContentLoaded', async function() {
         if (typeof Database === 'undefined') {
           console.error('❌ Banco de dados não carregado!');
           return;
         }
 
-        // Aguarda a carga de dados ser finalizada
         window.DB = await Database.init();
         
         applySettings();
         renderMenus();
         renderNoticia();
         setupSearch();
-
-        console.log('🔑 Pressione Ctrl para acessar o painel admin');
       });
 
     })();
