@@ -273,8 +273,8 @@
 
         container.innerHTML = html;
 
-        materia.views = (materia.views || 0) + 1;
-        window.DB.save();
+        // Comando que incrementa e já manda para o Google Sheets!
+        window.DB.incrementViews(materia.id);
       }
 
       function setupSearch() {
