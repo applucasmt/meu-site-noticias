@@ -1,20 +1,14 @@
 // ============================================================
-// BANCO DE DADOS COM GOOGLE SHEETS
+// BANCO DE DADOS COM GOOGLE SHEETS E SYNC EM TEMPO REAL
 // ============================================================
 
 const Database = {
-  // ============================================================
-  // CONFIGURAÇÕES
-  // ============================================================
   config: {
     // COLOQUE A URL DO SEU WEB APP AQUI
     webAppUrl: 'https://script.google.com/macros/s/AKfycbxjRL-yW22O7W0bIUvQFLTCJ1gbfmM6AAJaY9kDJWfe7dHYxiSR-sbOeF1I9Z95BK34/exec',
     spreadsheetId: '1Oqa-fRio2jjfM0SgeGsnvNuc5yFJXozNWxw0nYHyUHc'
   },
 
-  // ============================================================
-  // DADOS EM CACHE
-  // ============================================================
   cache: {
     settings: null,
     categories: [],
@@ -25,7 +19,7 @@ const Database = {
   },
 
   // ============================================================
-  // DADOS PADRÃO (FALLBACK E PROTEÇÃO CONTRA ERROS)
+  // DADOS PADRÃO (FALLBACK)
   // ============================================================
   getDefaultSettings() {
     return {
@@ -62,36 +56,12 @@ const Database = {
         title: 'Governo anuncia novo pacote de incentivo à tecnologia verde',
         category: 'Política',
         slug: 'governo-anuncia-novo-pacote',
-        content: '<p>Medidas incluem crédito para startups e renovação da frota de veículos elétricos. Expectativa é gerar 50 mil empregos até 2027.</p>',
+        content: '<p>Medidas incluem crédito para startups e renovação da frota de veículos elétricos.</p>',
         image: '',
         status: 'published',
         author: 'admin',
         date: new Date().toISOString(),
         views: 1250
-      },
-      {
-        id: 2,
-        title: 'Bolsa fecha em alta com otimismo no exterior',
-        category: 'Economia',
-        slug: 'bolsa-fecha-em-alta',
-        content: '<p>O Ibovespa fechou o dia em alta de 1,2% impulsionado por dados positivos dos EUA.</p>',
-        image: '',
-        status: 'published',
-        author: 'admin',
-        date: new Date(Date.now() - 3600000).toISOString(),
-        views: 980
-      },
-      {
-        id: 3,
-        title: 'Novo chip brasileiro promete eficiência energética',
-        category: 'Tecnologia',
-        slug: 'novo-chip-brasileiro',
-        content: '<p>Pesquisadores da Unicamp desenvolveram um novo chip que reduz o consumo de energia em até 40%.</p>',
-        image: '',
-        status: 'published',
-        author: 'admin',
-        date: new Date(Date.now() - 7200000).toISOString(),
-        views: 2100
       }
     ];
   },
@@ -108,29 +78,26 @@ const Database = {
   // ============================================================
   async load() {
     try {
-      console.log('📡 Carregando dados do Google Sheets...');
-      
+      console.log('📡 Buscando dados recentes da Planilha...');
       const response = await fetch(`${this.config.webAppUrl}?action=getAllData`);
-      
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
       const data = await response.json();
-      
       if (data.success === false) throw new Error(data.error || 'Erro ao carregar dados');
-      if (!data.settings || !data.categories) throw new Error('Dados incompletos da planilha');
       
       this.cache.settings = data.settings;
-      this.cache.categories = data.categories;
+      this.cache.categories = data.categories || [];
       this.cache.materias = data.materias || [];
       this.cache.users = data.users || {};
       this.cache.history = data.history || [];
       this.cache.loaded = true;
       
-      console.log('✅ Dados carregados do Google Sheets!');
+      this.saveToLocalStorage();
+      console.log('✅ Dados da Planilha sincronizados com sucesso!');
       return true;
       
     } catch (error) {
-      console.warn('⚠️ Erro ao carregar do Google Sheets, usando fallback:', error.message);
+      console.warn('⚠️ Erro de rede (usando dados locais):', error.message);
       return this.loadFromFallback();
     }
   },
@@ -150,41 +117,47 @@ const Database = {
     try {
       localStorage.setItem('newsportal_db', JSON.stringify(this.cache));
     } catch (e) {
-      console.warn('Erro ao salvar localStorage:', e);
+      console.warn('Erro no localStorage:', e);
     }
   },
 
-  async save() {
+  // ============================================================
+  // SINCRONIZADOR BACKGROUND (ENVIAR PARA A PLANILHA)
+  // ============================================================
+  async syncWithBackend(action, payload = {}) {
+    if (!this.config.webAppUrl) return;
     try {
-      this.saveToLocalStorage();
+      console.log(`⬆️ Enviando para a Planilha: [${action}]`);
+      const body = { action, ...payload };
       
-      const response = await fetch(this.config.webAppUrl, {
+      fetch(this.config.webAppUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'updateSettings',
-          settings: this.getSettings() // Garante que salva configurações completas
-        })
-      });
-      
-      if (response.ok) console.log('✅ Dados salvos no Google Sheets!');
-      return true;
-    } catch (error) {
-      console.warn('⚠️ Erro ao salvar no Google Sheets:', error);
-      return true;
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Evita erro de CORS
+        body: JSON.stringify(body)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.success) {
+          console.log(`✅ Salvo na Planilha! (${action})`);
+        } else {
+          console.error(`❌ Planilha recusou (${action}):`, data.error);
+        }
+      })
+      .catch(err => console.error(`❌ Falha de rede ao salvar (${action}):`, err));
+    } catch (e) {
+      console.error('Erro na sincronização:', e);
     }
   },
 
+  // Mantido para não quebrar compatibilidade
+  save() { this.saveToLocalStorage(); },
+
   // ============================================================
-  // GETTERS & SETTERS (Com Proteção Avançada)
+  // GETTERS (Leitura)
   // ============================================================
-  
   getSettings() {
-    // 🛡️ PROTEÇÃO: Mescla as configs que vieram vazias com as originais!
-    // Isso impede o erro de 'undefined.split()' nos arquivos HTML.
     const def = this.getDefaultSettings();
     const cur = this.cache.settings || {};
-    
     return {
       primaryColor: cur.primaryColor || def.primaryColor,
       secondaryColor: cur.secondaryColor || def.secondaryColor,
@@ -216,49 +189,68 @@ const Database = {
   getUsers() { return this.cache.users || this.getDefaultUsers(); },
   getHistory() { return this.cache.history || []; },
 
+  // ============================================================
+  // SETTERS (Escrita / Modificação) -> AGORA SALVAM NO SHEETS
+  // ============================================================
   addCategory(name, icon = 'fa-tag') {
     const slug = this.generateSlug(name);
     const maxOrder = Math.max(...this.cache.categories.map(c => c.order), 0);
     const newCategory = { id: this.cache.categories.length + 1, name: name.trim(), slug, icon: icon.trim() || 'fa-tag', active: true, order: maxOrder + 1 };
     this.cache.categories.push(newCategory);
-    this.addHistory(`Criou categoria: ${name}`);
-    this.save();
+    this.saveToLocalStorage();
+    
+    this.syncWithBackend('addCategory', { name, icon }); // Manda pro Sheets
     return newCategory;
   },
+
   editCategory(id, data) {
     const cat = this.cache.categories.find(c => c.id === id);
     if (cat) {
       if (data.name) { cat.name = data.name.trim(); cat.slug = this.generateSlug(data.name); }
       if (data.icon) cat.icon = data.icon.trim();
       if (data.active !== undefined) cat.active = data.active;
-      this.addHistory(`Editou categoria: ${cat.name}`);
-      this.save();
+      this.saveToLocalStorage();
+      
+      this.syncWithBackend('editCategory', { id, data }); // Manda pro Sheets
       return true;
     }
     return false;
   },
+
   deleteCategory(id) {
     const cat = this.cache.categories.find(c => c.id === id);
-    if (cat) { cat.active = false; this.addHistory(`Desativou categoria: ${cat.name}`); this.save(); return true; }
+    if (cat) { 
+      cat.active = false; 
+      this.saveToLocalStorage(); 
+      this.syncWithBackend('editCategory', { id, data: { active: false } }); // Manda pro Sheets
+      return true; 
+    }
     return false;
   },
+
   reorderCategories(orderedIds) {
     orderedIds.forEach((id, index) => {
       const cat = this.cache.categories.find(c => c.id === id);
       if (cat) cat.order = index + 1;
     });
-    this.addHistory('Reordenou categorias');
-    this.save();
+    this.saveToLocalStorage();
   },
 
   addMateria(data) {
     const maxId = this.cache.materias.reduce((max, m) => Math.max(max, m.id || 0), 0);
-    const newMateria = { id: maxId + 1, title: data.title.trim(), category: data.category, slug: this.generateSlug(data.title), content: data.content || '', image: data.image || '', status: data.status || 'draft', author: data.author || 'admin', date: new Date().toISOString(), views: 0 };
+    const newMateria = { 
+      id: maxId + 1, title: data.title.trim(), category: data.category, 
+      slug: this.generateSlug(data.title), content: data.content || '', 
+      image: data.image || '', status: data.status || 'draft', 
+      author: data.author || 'admin', date: new Date().toISOString(), views: 0 
+    };
     this.cache.materias.push(newMateria);
-    this.addHistory(`Criou matéria: ${data.title}`);
-    this.save();
+    this.saveToLocalStorage();
+    
+    this.syncWithBackend('addMateria', { data: newMateria }); // Manda pro Sheets
     return newMateria;
   },
+
   editMateria(id, data) {
     const mat = this.cache.materias.find(m => m.id === id);
     if (mat) {
@@ -267,37 +259,34 @@ const Database = {
       if (data.content) mat.content = data.content;
       if (data.image !== undefined) mat.image = data.image;
       if (data.status) mat.status = data.status;
-      this.addHistory(`Editou matéria: ${mat.title}`);
-      this.save();
-      return true;
-    }
-    return false;
-  },
-  deleteMateria(id) {
-    const idx = this.cache.materias.findIndex(m => m.id === id);
-    if (idx > -1) {
-      const title = this.cache.materias[idx].title;
-      this.cache.materias.splice(idx, 1);
-      this.addHistory(`Excluiu matéria: ${title}`);
-      this.save();
+      this.saveToLocalStorage();
+      
+      this.syncWithBackend('editMateria', { id, data }); // Manda pro Sheets
       return true;
     }
     return false;
   },
 
-  addUser(username, password, level, name) {
-    if (this.cache.users[username]) return false;
-    this.cache.users[username] = { password: password, level: level || 'editor', name: name || username.charAt(0).toUpperCase() + username.slice(1) };
-    this.addHistory(`Adicionou usuário: ${username} (${level})`);
-    this.save();
-    return true;
+  deleteMateria(id) {
+    const idx = this.cache.materias.findIndex(m => m.id === id);
+    if (idx > -1) {
+      this.cache.materias.splice(idx, 1);
+      this.saveToLocalStorage();
+      
+      this.syncWithBackend('deleteMateria', { id }); // Manda pro Sheets
+      return true;
+    }
+    return false;
   },
-  deleteUser(username) {
-    if (username === 'admin') return false;
-    delete this.cache.users[username];
-    this.addHistory(`Removeu usuário: ${username}`);
-    this.save();
-    return true;
+
+  incrementViews(id) {
+    const mat = this.cache.materias.find(m => m.id === id);
+    if (mat) {
+      mat.views = (mat.views || 0) + 1;
+      this.saveToLocalStorage();
+      
+      this.syncWithBackend('incrementViews', { id }); // Manda pro Sheets
+    }
   },
 
   updateSettings(newSettings) {
@@ -307,18 +296,40 @@ const Database = {
         this.cache.settings[key] = newSettings[key];
       }
     });
-    this.addHistory('Atualizou configurações do site');
-    this.save();
+    this.saveToLocalStorage();
+    
+    this.syncWithBackend('updateSettings', { settings: this.getSettings() }); // Manda pro Sheets
     return this.getSettings();
   },
 
-  generateSlug(text) {
-    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
+  addUser(username, password, level, name) {
+    if (this.cache.users[username]) return false;
+    this.cache.users[username] = { password: password, level: level || 'editor', name: name || username.charAt(0).toUpperCase() + username.slice(1) };
+    this.saveToLocalStorage();
+    
+    this.syncWithBackend('addUser', { username, password, level, name }); // Manda pro Sheets
+    return true;
   },
+
+  deleteUser(username) {
+    if (username === 'admin') return false;
+    delete this.cache.users[username];
+    this.saveToLocalStorage();
+    
+    this.syncWithBackend('deleteUser', { username }); // Manda pro Sheets
+    return true;
+  },
+
   addHistory(message, user = 'admin') {
     if (!this.cache.history) this.cache.history = [];
     this.cache.history.unshift({ message, user: user || 'admin', time: new Date().toISOString() });
     if (this.cache.history.length > 100) this.cache.history = this.cache.history.slice(0, 100);
+    
+    this.syncWithBackend('addHistory', { message, user }); // Manda pro Sheets
+  },
+
+  generateSlug(text) {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
   },
 
   async init() {
