@@ -1,11 +1,11 @@
 // ============================================================
-// BANCO DE DADOS COM GOOGLE SHEETS E SYNC EM TEMPO REAL
+// BANCO DE DADOS COM GOOGLE SHEETS E CACHE INSTANTÂNEO
 // ============================================================
 
 const Database = {
   config: {
     // COLOQUE A URL DO SEU WEB APP AQUI
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbzAv4_IaHzlZV7mZ4XYpeUZbFBoOFoyssTW1QNSx6NqcZY12pRSZgc9Y6_4cyY9M8HX/exec',
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbxjRL-yW22O7W0bIUvQFLTCJ1gbfmM6AAJaY9kDJWfe7dHYxiSR-sbOeF1I9Z95BK34/exec',
     spreadsheetId: '1Oqa-fRio2jjfM0SgeGsnvNuc5yFJXozNWxw0nYHyUHc'
   },
 
@@ -74,6 +74,27 @@ const Database = {
   },
 
   // ============================================================
+  // CARREGAR CACHE LOCAL (INSTANTÂNEO)
+  // ============================================================
+  loadLocal() {
+    try {
+      const saved = localStorage.getItem('newsportal_db');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.categories && parsed.materias) {
+          this.cache = parsed;
+          this.cache.loaded = true;
+          console.log('⚡ Dados carregados da memória local (Abertura 0 segundos)!');
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao ler cache local:', e);
+    }
+    return false;
+  },
+
+  // ============================================================
   // CARREGAR DADOS DO GOOGLE SHEETS
   // ============================================================
   async load() {
@@ -98,7 +119,8 @@ const Database = {
       
     } catch (error) {
       console.warn('⚠️ Erro de rede (usando dados locais):', error.message);
-      return this.loadFromFallback();
+      if (!this.cache.loaded) return this.loadFromFallback();
+      return false;
     }
   },
 
@@ -199,7 +221,7 @@ const Database = {
     this.cache.categories.push(newCategory);
     this.saveToLocalStorage();
     
-    this.syncWithBackend('addCategory', { name, icon }); // Manda pro Sheets
+    this.syncWithBackend('addCategory', { name, icon }); 
     return newCategory;
   },
 
@@ -211,7 +233,7 @@ const Database = {
       if (data.active !== undefined) cat.active = data.active;
       this.saveToLocalStorage();
       
-      this.syncWithBackend('editCategory', { id, data }); // Manda pro Sheets
+      this.syncWithBackend('editCategory', { id, data }); 
       return true;
     }
     return false;
@@ -222,7 +244,7 @@ const Database = {
     if (cat) { 
       cat.active = false; 
       this.saveToLocalStorage(); 
-      this.syncWithBackend('editCategory', { id, data: { active: false } }); // Manda pro Sheets
+      this.syncWithBackend('editCategory', { id, data: { active: false } }); 
       return true; 
     }
     return false;
@@ -247,7 +269,7 @@ const Database = {
     this.cache.materias.push(newMateria);
     this.saveToLocalStorage();
     
-    this.syncWithBackend('addMateria', { data: newMateria }); // Manda pro Sheets
+    this.syncWithBackend('addMateria', { data: newMateria }); 
     return newMateria;
   },
 
@@ -261,7 +283,7 @@ const Database = {
       if (data.status) mat.status = data.status;
       this.saveToLocalStorage();
       
-      this.syncWithBackend('editMateria', { id, data }); // Manda pro Sheets
+      this.syncWithBackend('editMateria', { id, data }); 
       return true;
     }
     return false;
@@ -273,7 +295,7 @@ const Database = {
       this.cache.materias.splice(idx, 1);
       this.saveToLocalStorage();
       
-      this.syncWithBackend('deleteMateria', { id }); // Manda pro Sheets
+      this.syncWithBackend('deleteMateria', { id }); 
       return true;
     }
     return false;
@@ -285,7 +307,7 @@ const Database = {
       mat.views = (mat.views || 0) + 1;
       this.saveToLocalStorage();
       
-      this.syncWithBackend('incrementViews', { id }); // Manda pro Sheets
+      this.syncWithBackend('incrementViews', { id }); 
     }
   },
 
@@ -298,7 +320,7 @@ const Database = {
     });
     this.saveToLocalStorage();
     
-    this.syncWithBackend('updateSettings', { settings: this.getSettings() }); // Manda pro Sheets
+    this.syncWithBackend('updateSettings', { settings: this.getSettings() }); 
     return this.getSettings();
   },
 
@@ -307,7 +329,7 @@ const Database = {
     this.cache.users[username] = { password: password, level: level || 'editor', name: name || username.charAt(0).toUpperCase() + username.slice(1) };
     this.saveToLocalStorage();
     
-    this.syncWithBackend('addUser', { username, password, level, name }); // Manda pro Sheets
+    this.syncWithBackend('addUser', { username, password, level, name }); 
     return true;
   },
 
@@ -316,7 +338,7 @@ const Database = {
     delete this.cache.users[username];
     this.saveToLocalStorage();
     
-    this.syncWithBackend('deleteUser', { username }); // Manda pro Sheets
+    this.syncWithBackend('deleteUser', { username }); 
     return true;
   },
 
@@ -325,15 +347,36 @@ const Database = {
     this.cache.history.unshift({ message, user: user || 'admin', time: new Date().toISOString() });
     if (this.cache.history.length > 100) this.cache.history = this.cache.history.slice(0, 100);
     
-    this.syncWithBackend('addHistory', { message, user }); // Manda pro Sheets
+    this.syncWithBackend('addHistory', { message, user }); 
   },
 
   generateSlug(text) {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
   },
 
+  // ============================================================
+  // INICIALIZADOR INTELIGENTE (SEM TELA BRANCA)
+  // ============================================================
   async init() {
-    await this.load();
+    const hasLocalData = this.loadLocal();
+    
+    const isAdmin = window.location.pathname.includes('admin');
+    const urlParams = new URLSearchParams(window.location.search);
+    const noticiaId = parseInt(urlParams.get('id'));
+    
+    let isMissingArticle = false;
+    if (noticiaId && hasLocalData) {
+      isMissingArticle = !this.cache.materias.find(m => m.id === noticiaId);
+    }
+
+    // Se é o Painel Admin, se não tem dados locais, ou se o link é novo e não tá na memória: Aguarda o Sheets.
+    if (!hasLocalData || isAdmin || isMissingArticle) {
+      await this.load();
+    } else {
+      // Caso contrário, libera a tela NA HORA e atualiza os dados em background silenciosamente!
+      this.load().catch(e => console.warn('Erro sync background', e));
+    }
+    
     return this;
   }
 };
