@@ -31,13 +31,8 @@
     .main-nav a { padding: 0.3rem 0; font-size: 0.95rem; color: #2c3e50; border-bottom: 3px solid transparent; transition: all 0.3s; }
     .main-nav a:hover { border-bottom-color: #d32f2f; color: #0b1a2a; }
     .main-nav .active { border-bottom-color: #d32f2f; color: #0b1a2a; }
-    
-    /* REGRAS DE ÍCONES ADICIONADAS */
     .main-nav a i { margin-right: 4px; font-size: 0.8rem; opacity: 0.7; transition: color 0.3s; }
     .main-nav a.active i { opacity: 1; color: #d32f2f; }
-    .main-nav .admin-link { background: #d32f2f; color: white !important; padding: 0.2rem 0.8rem; border-radius: 20px; border-bottom-color: transparent !important; }
-    .main-nav .admin-link:hover { background: #b71c1c; border-bottom-color: transparent !important; }
-    .main-nav .admin-link i { color: white !important; opacity: 1; }
 
     .page-header { padding: 1rem 0 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid #eef2f7; transition: border-color 0.3s; }
     .page-header h1 { font-size: 2rem; font-weight: 700; transition: font-family 0.3s, color 0.3s; }
@@ -218,7 +213,6 @@
     (function() {
       'use strict';
 
-      // Pega o slug ANTES, mas não acessa o DB.getCategoryBySlug() ainda!
       const path = window.location.pathname;
       const slug = path.split('/').pop().replace('.html', '');
       let category = null; 
@@ -366,7 +360,7 @@
         }
 
         sidebar.innerHTML = items.map(m => {
-          const cat = window.DB.categories.find(c => c.name === m.category);
+          const cat = window.DB.getCategories().find(c => c.name === m.category);
           const icon = cat ? getCategoryIcon(cat.icon) : 'fa-tag';
           return `
             <a href="noticia.html?id=${m.id}" style="color:inherit; display:block;">
@@ -403,7 +397,7 @@
         }
 
         list.innerHTML = items.map(m => {
-          const cat = window.DB.categories.find(c => c.name === m.category);
+          const cat = window.DB.getCategories().find(c => c.name === m.category);
           const icon = cat ? getCategoryIcon(cat.icon) : 'fa-tag';
           return `
             <div class="news-card" data-id="${m.id}">
@@ -458,19 +452,13 @@
       document.addEventListener('keyup', (e) => { if (e.key === 'Control') { ctrlPressed = false; setTimeout(() => { if (!ctrlPressed && lockIcon) { lockIcon.classList.remove('visible'); } }, 300); } });
       if (lockIcon) { lockIcon.addEventListener('click', () => { window.location.href = 'admin.html'; }); }
 
-      // ============================================================
-      // INICIALIZAÇÃO CORRIGIDA (AGUARDA O DB.INIT)
-      // ============================================================
       document.addEventListener('DOMContentLoaded', async function() {
         if (typeof Database === 'undefined') {
           console.error('❌ Banco de dados não carregado!');
           return;
         }
 
-        // Aguarda a carga de dados ser finalizada
         window.DB = await Database.init();
-        
-        // AGORA sim verifica a categoria com os dados carregados!
         category = window.DB.getCategoryBySlug(slug);
 
         applySettings();
@@ -478,8 +466,6 @@
         renderCategoryContent();
         updateTime();
         setupSearch();
-
-        console.log(`📰 Página da categoria: ${category ? category.name : 'Não encontrada'}`);
       });
 
     })();
