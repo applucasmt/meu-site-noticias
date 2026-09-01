@@ -5,7 +5,7 @@
 const Database = {
   config: {
     // COLOQUE A URL DO SEU WEB APP AQUI
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbxjRL-yW22O7W0bIUvQFLTCJ1gbfmM6AAJaY9kDJWfe7dHYxiSR-sbOeF1I9Z95BK34/exec',
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbzAv4_IaHzlZV7mZ4XYpeUZbFBoOFoyssTW1QNSx6NqcZY12pRSZgc9Y6_4cyY9M8HX/exec',
     spreadsheetId: '1Oqa-fRio2jjfM0SgeGsnvNuc5yFJXozNWxw0nYHyUHc'
   },
 
