@@ -25,7 +25,7 @@ const Database = {
   },
 
   // ============================================================
-  // DADOS PADRÃO (FALLBACK)
+  // DADOS PADRÃO (FALLBACK E PROTEÇÃO CONTRA ERROS)
   // ============================================================
   getDefaultSettings() {
     return {
@@ -158,13 +158,12 @@ const Database = {
     try {
       this.saveToLocalStorage();
       
-      // Tipo 'text/plain' evita erros de preflight CORS no Google Apps Script
       const response = await fetch(this.config.webAppUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'updateSettings',
-          settings: this.cache.settings
+          settings: this.getSettings() // Garante que salva configurações completas
         })
       });
       
@@ -177,9 +176,30 @@ const Database = {
   },
 
   // ============================================================
-  // GETTERS & SETTERS (Mantidos idênticos)
+  // GETTERS & SETTERS (Com Proteção Avançada)
   // ============================================================
-  getSettings() { return this.cache.settings || this.getDefaultSettings(); },
+  
+  getSettings() {
+    // 🛡️ PROTEÇÃO: Mescla as configs que vieram vazias com as originais!
+    // Isso impede o erro de 'undefined.split()' nos arquivos HTML.
+    const def = this.getDefaultSettings();
+    const cur = this.cache.settings || {};
+    
+    return {
+      primaryColor: cur.primaryColor || def.primaryColor,
+      secondaryColor: cur.secondaryColor || def.secondaryColor,
+      backgroundColor: cur.backgroundColor || def.backgroundColor,
+      textColor: cur.textColor || def.textColor,
+      fontFamily: cur.fontFamily || def.fontFamily,
+      headingFont: cur.headingFont || def.headingFont,
+      logoText: cur.logoText || def.logoText,
+      logoSubtext: cur.logoSubtext !== undefined ? cur.logoSubtext : def.logoSubtext,
+      logoIcon: cur.logoIcon || def.logoIcon,
+      containerMaxWidth: cur.containerMaxWidth || def.containerMaxWidth,
+      borderRadius: cur.borderRadius || def.borderRadius
+    };
+  },
+
   getCategories() { return (this.cache.categories || []).filter(c => c.active).sort((a, b) => a.order - b.order); },
   getAllCategories() { return (this.cache.categories || []).sort((a, b) => a.order - b.order); },
   getCategoryBySlug(slug) { return (this.cache.categories || []).find(c => c.slug === slug && c.active); },
@@ -281,12 +301,15 @@ const Database = {
   },
 
   updateSettings(newSettings) {
+    if (!this.cache.settings) this.cache.settings = {};
     Object.keys(newSettings).forEach(key => {
-      if (this.cache.settings[key] !== undefined) this.cache.settings[key] = newSettings[key];
+      if (newSettings[key] !== undefined && newSettings[key] !== "") {
+        this.cache.settings[key] = newSettings[key];
+      }
     });
     this.addHistory('Atualizou configurações do site');
     this.save();
-    return this.cache.settings;
+    return this.getSettings();
   },
 
   generateSlug(text) {
