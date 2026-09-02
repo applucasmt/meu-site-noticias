@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- SEO & COMPARTILHAMENTO -->
+  
+  <!-- SEO & COMPARTILHAMENTO (Injeção base para WhatsApp e Redes Sociais) -->
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="NewsPortal">
   <meta property="og:title" content="NewsPortal - Leia as últimas notícias">
@@ -11,126 +12,388 @@
   <meta property="og:image" content="https://i.imgur.com/k91Jv6N.png"> 
   
   <title id="pageTitle">NewsPortal · Notícia</title>
+  
+  <!-- Importando o LocalForage -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; color: #1e2a3a; line-height: 1.6; padding: 0 1rem; }
-    a { text-decoration: none; color: inherit; } img { max-width: 100%; height: auto; display: block; }
-    .container { max-width: 1280px; margin: 0 auto; background: white; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border-radius: 0 0 1.5rem 1.5rem; overflow: hidden; padding: 0 1.5rem 2rem; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; background: #f4f6f9; color: #1e2a3a; line-height: 1.6; padding: 0 1rem; transition: background 0.3s, color 0.3s; }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; height: auto; display: block; }
+    .container { max-width: 1280px; margin: 0 auto; background: white; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border-radius: 0 0 1.5rem 1.5rem; overflow: hidden; padding: 0 1.5rem 2rem; transition: max-width 0.3s, border-radius 0.3s, background 0.3s; }
     
-    #loadingOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; transition: opacity 0.5s; }
-    #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
-    .loading-spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #d32f2f; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .top-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 1.2rem 0 0.8rem; border-bottom: 2px solid #eef2f7; transition: border-color 0.3s; }
+    .logo-area { display: flex; align-items: center; gap: 0.5rem; }
+    .logo-icon { font-size: 2rem; color: #d32f2f; transition: color 0.3s; }
+    .logo { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.5px; transition: font-family 0.3s; }
+    .logo span { color: #d32f2f; transition: color 0.3s; }
+    .logo small { font-size: 0.75rem; font-weight: 400; color: #6b7a8f; letter-spacing: 0.3px; margin-left: 6px; transition: color 0.3s; }
+    
+    .header-actions { display: flex; align-items: center; gap: 1.2rem; }
+    .header-actions .search-box { background: #f0f3f8; border-radius: 40px; padding: 0.4rem 1rem; display: flex; align-items: center; gap: 6px; transition: background 0.3s; }
+    .header-actions .search-box input { border: none; background: transparent; padding: 0.4rem 0; font-size: 0.9rem; outline: none; width: 140px; color: inherit; }
+    .header-actions .search-box i { color: #6b7a8f; font-size: 0.9rem; transition: color 0.3s; }
+    
+    .btn-assine { background: #d32f2f; color: white; font-weight: 600; padding: 0.45rem 1.2rem; border-radius: 40px; font-size: 0.9rem; transition: background 0.3s; border: none; cursor: default; }
+    .btn-assine:hover { opacity: 0.8; }
+    
+    .main-nav { display: flex; flex-wrap: wrap; gap: 0.2rem 1.2rem; padding: 0.8rem 0 0.2rem; border-bottom: 1px solid #e6ecf3; margin-bottom: 1.8rem; font-weight: 500; transition: border-color 0.3s; }
+    .main-nav a { padding: 0.3rem 0; font-size: 0.95rem; color: #2c3e50; border-bottom: 3px solid transparent; transition: all 0.3s; }
+    .main-nav a:hover { border-bottom-color: #d32f2f; color: #0b1a2a; }
+    .main-nav .active { border-bottom-color: #d32f2f; color: #0b1a2a; }
 
-    .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0 0.8rem; border-bottom: 2px solid #eef2f7; }
-    .logo-area { display: flex; align-items: center; gap: 0.5rem; } .logo-icon { font-size: 2rem; color: #d32f2f; }
-    .logo { font-size: 1.9rem; font-weight: 700; } .logo span { color: #d32f2f; } 
+    .main-nav a i { margin-right: 4px; font-size: 0.8rem; opacity: 0.7; transition: color 0.3s;}
+    .main-nav a.active i { opacity: 1; color: #d32f2f; }
+    .main-nav .admin-link { background: #d32f2f; color: white !important; padding: 0.2rem 0.8rem; border-radius: 20px; border-bottom-color: transparent !important; }
+    .main-nav .admin-link:hover { background: #b71c1c; border-bottom-color: transparent !important; }
+    .main-nav .admin-link i { color: white !important; opacity: 1; }
     
     .noticia-container { max-width: 820px; margin: 0 auto; padding: 1rem 0 2rem; }
     .noticia-header { margin-bottom: 1.5rem; }
-    .noticia-header .categoria { display: inline-block; background: #d32f2f; color: white; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 1rem; border-radius: 30px; margin-bottom: 0.7rem; text-transform: uppercase; }
-    .noticia-header h1 { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+    .noticia-header .categoria { display: inline-block; background: #d32f2f; color: white; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 1rem; border-radius: 30px; letter-spacing: 0.3px; margin-bottom: 0.7rem; text-transform: uppercase; transition: background 0.3s; }
+    .noticia-header h1 { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; transition: font-family 0.3s; }
     .noticia-header .meta { display: flex; gap: 1.5rem; font-size: 0.85rem; color: #6b7a8f; align-items: center; flex-wrap: wrap; margin-top: 0.5rem; }
+    .noticia-header .meta i { margin-right: 4px; }
     
-    .noticia-img { margin: 1.5rem 0; border-radius: 1rem; overflow: hidden; background: #1e2a3a; }
+    .noticia-img { margin: 1.5rem 0; border-radius: 1rem; overflow: hidden; background: #1e2a3a; transition: background 0.3s; }
     .noticia-img img { width: 100%; max-height: 500px; object-fit: cover; }
-    .noticia-content { font-size: 1.1rem; line-height: 1.8; color: #1e2a3a; }
-    .noticia-content p { margin-bottom: 1.2rem; } .noticia-content img { max-width: 100%; border-radius: 0.5rem; margin: 1rem 0; }
+    .noticia-img .placeholder { padding: 4rem; text-align: center; color: rgba(255,255,255,0.3); font-size: 3rem; }
     
-    .article-tags { margin-top: 2rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .article-tags span { background: #eef2f7; color: #4a5b6e; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
+    .noticia-content { font-size: 1.1rem; line-height: 1.8; color: #1e2a3a; transition: color 0.3s; }
+    .noticia-content p { margin-bottom: 1.2rem; }
+    .noticia-content img { max-width: 100%; border-radius: 0.5rem; margin: 1rem 0; }
+    .noticia-content blockquote { border-left: 4px solid #d32f2f; padding: 0.5rem 1.5rem; margin: 1rem 0; background: #f8f9fa; border-radius: 0 0.5rem 0.5rem 0; transition: border-color 0.3s, background 0.3s; }
     
-    .noticia-footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eef2f7; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-    .share-buttons { display: flex; gap: 0.5rem; } .share-buttons a { padding: 0.4rem 0.8rem; border-radius: 6px; color: white; font-size: 0.8rem; }
-    .whatsapp { background: #25D366; } .facebook { background: #1877F2; } .twitter { background: #000000; }
-    .preview-banner { background: #f39c12; color: white; text-align: center; padding: 0.5rem; font-weight: bold; font-size: 0.9rem; }
+    .noticia-footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eef2f7; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; transition: border-color 0.3s; }
+    .noticia-footer .share-buttons { display: flex; gap: 0.5rem; }
+    .noticia-footer .share-buttons a { padding: 0.4rem 0.8rem; border-radius: 6px; color: white; font-size: 0.8rem; transition: 0.2s; }
+    .share-buttons .whatsapp { background: #25D366; } .share-buttons .whatsapp:hover { background: #1da851; }
+    .share-buttons .facebook { background: #1877F2; } .share-buttons .facebook:hover { background: #0d65d9; }
+    .share-buttons .twitter { background: #000000; }  .share-buttons .twitter:hover { background: #1a1a1a; }
+    .btn-voltar { color: #6b7a8f; transition: color 0.3s; } .btn-voltar:hover { color: #d32f2f; } .btn-voltar i { margin-right: 4px; }
+    
+    .footer { margin-top: 3rem; padding-top: 1.8rem; border-top: 1px solid #e6ecf3; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #4a5b6e; transition: border-color 0.3s, color 0.3s; }
+    .footer-links { display: flex; gap: 1.8rem; flex-wrap: wrap; }
+    .footer-links a:hover { color: #d32f2f; transition: color 0.3s; }
+    .footer .copy { opacity: 0.7; transition: color 0.3s; }
     
     .lock-icon { position: fixed; bottom: 20px; right: 20px; background: #1e2a3a; color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: all 0.3s; z-index: 100; box-shadow: 0 4px 16px rgba(0,0,0,0.25); font-size: 1.2rem; }
-    .lock-icon.visible { opacity: 0.95; }
-    .lock-icon:hover { opacity: 1 !important; transform: scale(1.1); }
+    .lock-icon.visible { opacity: 0.95; } .lock-icon:hover { opacity: 1 !important; transform: scale(1.1); }
+    
+    .not-found { text-align: center; padding: 4rem 0; color: #6b7a8f; }
+    .not-found i { font-size: 4rem; display: block; margin-bottom: 1rem; color: #e74c3c; }
+    .not-found h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+
+    /* ========================================================= */
+    /* NOVAS REGRAS ADICIONADAS: TAGS E AVISO DE PREVIEW         */
+    /* ========================================================= */
+    .article-tags { margin-top: 2rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .article-tags span { background: #eef2f7; color: #4a5b6e; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
+    .preview-banner { background: #f39c12; color: white; text-align: center; padding: 0.5rem; font-weight: bold; font-size: 0.9rem; }
+    /* ========================================================= */
+    
+    @media (max-width: 900px) { .noticia-header h1 { font-size: 1.8rem; } }
+    @media (max-width: 640px) {
+      body { padding: 0 0.5rem; } .container { padding: 0 0.8rem 1.5rem; } .top-bar { flex-direction: column; align-items: stretch; gap: 0.8rem; }
+      .header-actions { flex-wrap: wrap; justify-content: space-between; } .header-actions .search-box input { width: 100px; }
+      .main-nav { gap: 0.4rem 0.8rem; font-size: 0.85rem; justify-content: center; } .noticia-header h1 { font-size: 1.4rem; }
+      .noticia-img .placeholder { padding: 2rem; font-size: 2rem; } .noticia-footer { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+      .footer { flex-direction: column; gap: 0.8rem; text-align: center; } .footer-links { flex-wrap: wrap; justify-content: center; gap: 1rem; }
+    }
+    @media (max-width: 430px) { .header-actions .search-box { width: 100%; } .header-actions .search-box input { width: 100%; } .btn-assine { width: 100%; text-align: center; } }
   </style>
 </head>
 <body>
-  <div id="loadingOverlay">
-    <div class="loading-spinner"></div>
-    <div class="loading-text" style="margin-top:1rem;">Carregando notícia...</div>
+
+  <!-- BANNER PARA MODO DE PRÉ-VISUALIZAÇÃO DO ADMIN -->
+  <div id="previewBanner" class="preview-banner" style="display: none;">
+    <i class="fas fa-eye"></i> MODO DE VISUALIZAÇÃO DE RASCUNHO (NÃO PÚBLICO)
   </div>
 
-  <div id="previewBanner" class="preview-banner" style="display: none;"><i class="fas fa-eye"></i> MODO DE VISUALIZAÇÃO (NÃO PÚBLICO)</div>
-  
-  <div class="container" id="mainContent" style="display:none;">
-    <header class="top-bar">
-      <div class="logo-area"><span class="logo-icon"><i class="fas fa-newspaper"></i></span><div class="logo">News<span>Portal</span></div></div>
+  <div class="container">
+
+    <header class="top-bar" id="headerTop">
+      <div class="logo-area">
+        <span class="logo-icon" id="logoIcon"><i class="fas fa-newspaper"></i></span>
+        <div class="logo" id="logoText">
+          News<span>Portal</span>
+          <small id="logoSubtext">· 2026</small>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar notícias..." id="searchInput" aria-label="Buscar">
+        </div>
+        <span class="btn-assine"><i class="fas fa-user-plus" style="margin-right: 6px;"></i>Assine</span>
+      </div>
     </header>
-    <div class="noticia-container" id="noticiaContainer"></div>
+
+    <nav class="main-nav" id="mainNav">
+      <!-- Preenchido via JavaScript -->
+    </nav>
+
+    <div class="noticia-container" id="noticiaContainer">
+      <!-- SPINNER DE CARREGAMENTO PARA EVITAR TELA BRANCA -->
+      <div style="text-align: center; padding: 6rem 1rem;">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: #d32f2f; margin-bottom: 1rem;"></i>
+        <h2 style="color: #1e2a3a; font-size: 1.5rem; margin-bottom: 0.5rem;">Carregando matéria...</h2>
+        <p style="color: #6b7a8f;">Buscando as informações mais recentes.</p>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-links">
+        <a href="#">Sobre</a>
+        <a href="#">Contato</a>
+        <a href="#">Anuncie</a>
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+      </div>
+      <div class="copy">
+        &copy; 2026 NewsPortal · todos os direitos reservados.
+      </div>
+    </footer>
+
   </div>
 
-  <!-- CADEADO DO ADMIN -->
   <div class="lock-icon" id="lockIcon" title="Pressione Ctrl e clique para acessar o painel admin">
     <i class="fas fa-lock"></i>
   </div>
 
   <script src="data/database.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      await window.Database.init();
-      
+    (function() {
+      'use strict';
+
       const urlParams = new URLSearchParams(window.location.search);
-      const isPreview = urlParams.get('preview') === 'true';
-      const noticiaId = parseInt(urlParams.get('id'));
+      const noticiaId = parseInt(urlParams.get('id')) || 0;
       
-      // Esconde o overlay de loading e exibe a página
-      document.getElementById('loadingOverlay').style.display = 'none';
-      document.getElementById('mainContent').style.display = 'block';
+      // Detecta se é o modo Preview
+      const isPreview = urlParams.get('preview') === 'true'; 
 
-      let materia;
-      if(isPreview) {
-        document.getElementById('previewBanner').style.display = 'block';
-        materia = JSON.parse(sessionStorage.getItem('preview_materia'));
-      } else {
-        materia = window.DB.getMateriaById(noticiaId);
-        if(materia) window.DB.incrementViews(materia.id);
+      function applySettings() {
+        const settings = window.DB.getSettings();
+        if (!settings) return;
+
+        document.body.style.background = settings.backgroundColor;
+        document.body.style.color = settings.textColor;
+
+        const container = document.querySelector('.container');
+        if (container) {
+          container.style.maxWidth = settings.containerMaxWidth;
+          container.style.borderRadius = settings.borderRadius;
+        }
+
+        document.body.style.fontFamily = settings.fontFamily;
+
+        const headingElements = document.querySelectorAll('.noticia-header h1, .noticia-header .categoria');
+        headingElements.forEach(el => { el.style.fontFamily = settings.headingFont; });
+
+        const logoIcon = document.getElementById('logoIcon');
+        if (logoIcon) {
+          logoIcon.innerHTML = `<i class="fas ${settings.logoIcon}"></i>`;
+          logoIcon.style.color = settings.primaryColor;
+        }
+
+        const logoText = document.getElementById('logoText');
+        if (logoText) {
+          const parts = settings.logoText.split(' ');
+          if (parts.length > 1) {
+            logoText.innerHTML = `${parts[0]} <span>${parts.slice(1).join(' ')}</span> <small id="logoSubtext">${settings.logoSubtext}</small>`;
+          } else {
+            logoText.innerHTML = `${settings.logoText} <span>${settings.logoSubtext}</span>`;
+          }
+        }
       }
 
-      if (!materia) {
-        document.getElementById('noticiaContainer').innerHTML = `<h2>Notícia não encontrada</h2><a href="index.html">Voltar</a>`;
-        return;
+      function renderMenus() {
+        const nav = document.getElementById('mainNav');
+        if (!nav) return;
+        const categories = window.DB.getCategories();
+        
+        let html = `<a href="index.html">Últimas</a>`;
+        categories.forEach(cat => {
+          html += `<a href="${cat.slug}.html">
+            <i class="fas ${cat.icon || 'fa-tag'}"></i> ${cat.name}
+          </a>`;
+        });
+        nav.innerHTML = html;
       }
 
-      // Injeta META TAGS dinâmicas para SEO e WhatsApp
-      document.title = materia.title;
-      const metaOgTitle = document.createElement('meta'); metaOgTitle.setAttribute('property', 'og:title'); metaOgTitle.setAttribute('content', materia.title); document.head.appendChild(metaOgTitle);
-      const metaOgImg = document.createElement('meta'); metaOgImg.setAttribute('property', 'og:image'); metaOgImg.setAttribute('content', materia.image); document.head.appendChild(metaOgImg);
+      function renderNoticia() {
+        const container = document.getElementById('noticiaContainer');
+        if (!container) return;
 
-      const date = new Date(materia.date).toLocaleString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-      const tagsHtml = materia.tags ? materia.tags.split(',').map(t => `<span>#${t.trim()}</span>`).join('') : '';
+        let materia;
+        
+        // LÊ DO SESSION STORAGE SE FOR PREVIEW
+        if (isPreview) {
+          document.getElementById('previewBanner').style.display = 'block';
+          materia = JSON.parse(sessionStorage.getItem('preview_materia'));
+        } else {
+          materia = window.DB.getMateriaById(noticiaId);
+        }
 
-      document.getElementById('noticiaContainer').innerHTML = `
-        <div class="noticia-header">
-          <span class="categoria">${materia.category}</span>
-          <h1>${materia.title}</h1>
-          <div class="meta"><span><i class="far fa-calendar-alt"></i> ${date}</span><span><i class="far fa-user"></i> ${materia.author || 'Redação'}</span></div>
-        </div>
-        <div class="noticia-img">${materia.image ? `<img src="${materia.image}">` : ''}</div>
-        <div class="noticia-content">${materia.content}</div>
-        ${tagsHtml ? `<div class="article-tags">${tagsHtml}</div>` : ''}
-        <div class="noticia-footer">
-          <a href="javascript:history.back()"><i class="fas fa-arrow-left"></i> Voltar</a>
-          <div class="share-buttons">
-            <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(materia.title + ' ' + window.location.href)}" class="whatsapp" target="_blank"><i class="fab fa-whatsapp"></i> Compartilhar</a>
+        if (!materia || (materia.status !== 'published' && !isPreview)) {
+          container.innerHTML = `
+            <div class="not-found">
+              <i class="fas fa-exclamation-circle"></i>
+              <h2>Notícia não encontrada</h2>
+              <p>A notícia que você procura não existe ou foi removida.</p>
+              <p style="margin-top:1rem;">
+                <a href="index.html" style="color:#3498db; text-decoration:underline;">← Voltar para a página inicial</a>
+              </p>
+            </div>
+          `;
+          document.title = 'NewsPortal · Notícia não encontrada';
+          return;
+        }
+
+        document.title = `NewsPortal · ${materia.title}`;
+
+        // ========================================================
+        // INJEÇÃO DE META TAGS (SEO E COMPARTILHAMENTO)
+        // ========================================================
+        const metaOgTitle = document.createElement('meta');
+        metaOgTitle.setAttribute('property', 'og:title');
+        metaOgTitle.setAttribute('content', materia.title);
+        document.head.appendChild(metaOgTitle);
+
+        if (materia.image) {
+          const metaOgImg = document.createElement('meta');
+          metaOgImg.setAttribute('property', 'og:image');
+          metaOgImg.setAttribute('content', materia.image);
+          document.head.appendChild(metaOgImg);
+        }
+        // ========================================================
+
+        const cat = window.DB.getCategories().find(c => c.name === materia.category);
+        const icon = cat ? (cat.icon || 'fa-tag') : 'fa-tag';
+
+        const date = new Date(materia.date);
+        const dataFormatada = date.toLocaleString('pt-BR', {
+          day: '2-digit', month: 'long', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+
+        const shareUrl = window.location.href;
+
+        // GERAÇÃO DO HTML DAS TAGS
+        const tagsHtml = materia.tags ? materia.tags.split(',').map(t => `<span>#${t.trim()}</span>`).join('') : '';
+
+        let html = `
+          <div class="noticia-header">
+            <span class="categoria"><i class="fas ${icon}" style="margin-right:4px;"></i> ${materia.category}</span>
+            <h1>${materia.title}</h1>
+            <div class="meta">
+              <span><i class="far fa-calendar-alt"></i> ${dataFormatada}</span>
+              <span><i class="far fa-user"></i> ${materia.author || 'NewsPortal'}</span>
+              <span><i class="far fa-eye"></i> ${materia.views || 0} visualizações</span>
+            </div>
           </div>
-        </div>
-      `;
-    });
+        `;
 
-    // ATALHO CTRL + CLIQUE
-    let ctrlPressed = false;
-    const lockIcon = document.getElementById('lockIcon');
-    document.addEventListener('keydown', (e) => { if (e.key === 'Control') { ctrlPressed = true; if (lockIcon) lockIcon.classList.add('visible'); } });
-    document.addEventListener('keyup', (e) => { if (e.key === 'Control') { ctrlPressed = false; setTimeout(() => { if (!ctrlPressed && lockIcon) { lockIcon.classList.remove('visible'); } }, 300); } });
-    if (lockIcon) { lockIcon.addEventListener('click', () => { window.location.href = 'admin.html'; }); }
+        if (materia.image) {
+          html += `
+            <div class="noticia-img">
+              <img src="${materia.image}" alt="${materia.title}">
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="noticia-img">
+              <div class="placeholder">
+                <i class="fas ${icon}"></i>
+              </div>
+            </div>
+          `;
+        }
+
+        html += `
+          <div class="noticia-content">
+            ${materia.content}
+          </div>
+
+          <!-- TAGS DA MATÉRIA -->
+          ${tagsHtml ? `<div class="article-tags">${tagsHtml}</div>` : ''}
+
+          <div class="noticia-footer">
+            <a href="javascript:history.back()" class="btn-voltar">
+              <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            <div class="share-buttons">
+              <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(materia.title + ' - ' + shareUrl)}" target="_blank" class="whatsapp">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+              </a>
+              <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" target="_blank" class="facebook">
+                <i class="fab fa-facebook-f"></i> Facebook
+              </a>
+              <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(materia.title + ' - ' + shareUrl)}" target="_blank" class="twitter">
+                <i class="fab fa-twitter"></i> Twitter
+              </a>
+            </div>
+          </div>
+        `;
+
+        container.innerHTML = html;
+
+        // Incrementa visualizações se não for preview
+        if (!isPreview) {
+          materia.views = (materia.views || 0) + 1;
+          window.DB.save();
+        }
+      }
+
+      function setupSearch() {
+        const input = document.getElementById('searchInput');
+        if (!input) return;
+
+        input.addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') {
+            const term = input.value.trim().toLowerCase();
+            if (!term) return;
+
+            const materias = window.DB.getMaterias();
+            const results = materias.filter(m =>
+              m.title.toLowerCase().includes(term) ||
+              (m.content && m.content.toLowerCase().includes(term))
+            );
+
+            if (results.length === 0) {
+              alert(`🔍 Nenhum resultado encontrado para "${term}"`);
+              return;
+            }
+
+            alert(`🔍 Resultados para "${term}":\n\n${results.map(m => `📰 ${m.title} (${m.category})`).join('\n')}`);
+          }
+        });
+      }
+
+      let ctrlPressed = false;
+      const lockIcon = document.getElementById('lockIcon');
+      document.addEventListener('keydown', (e) => { if (e.key === 'Control') { ctrlPressed = true; if (lockIcon) lockIcon.classList.add('visible'); } });
+      document.addEventListener('keyup', (e) => { if (e.key === 'Control') { ctrlPressed = false; setTimeout(() => { if (!ctrlPressed && lockIcon) { lockIcon.classList.remove('visible'); } }, 300); } });
+      if (lockIcon) { lockIcon.addEventListener('click', () => { window.location.href = 'admin.html'; }); }
+
+      document.addEventListener('DOMContentLoaded', async function() {
+        if (typeof Database === 'undefined') {
+          console.error('❌ Banco de dados não carregado!');
+          return;
+        }
+
+        window.DB = await Database.init();
+        
+        applySettings();
+        renderMenus();
+        renderNoticia();
+        setupSearch();
+      });
+
+    })();
   </script>
+
 </body>
 </html>
