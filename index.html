@@ -178,14 +178,14 @@
       document.getElementById('subscribeModal').style.display = 'none';
     }
 
-    // O BLOCO QUE RESOLVE O TRAVAMENTO
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         if (typeof window.Database === 'undefined') {
           throw new Error('O arquivo database.js não carregou. Verifique a sua conexão ou arquivo.');
         }
 
-        await window.Database.init();
+        // A CORREÇÃO PRINCIPAL ESTÁ AQUI (Atribuição do window.DB)
+        window.DB = await window.Database.init();
         
         applySettings(); 
         renderMenus(); 
@@ -193,14 +193,11 @@
         renderSidebar(); 
         renderMateriasList(true);
         
-        // Tudo deu certo, esconde o overlay
         document.getElementById('loadingOverlay').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
 
       } catch (error) {
         console.error('Erro Fatal de Carregamento:', error);
-        
-        // Força a tela de Erro Amigável a aparecer em vez do círculo travado
         document.getElementById('loadingOverlay').innerHTML = `
           <div style="text-align:center; padding: 2rem; background: white; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
             <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c; margin-bottom:1rem;"></i>
