@@ -9,6 +9,8 @@ const Database = {
     spreadsheetId: '1Oqa-fRio2jjfM0SgeGsnvNuc5yFJXozNWxw0nYHyUHc'
   },
 
+  currentUser: null, // Guarda quem está logado no painel
+
   cache: {
     settings: null,
     categories: [],
@@ -154,7 +156,7 @@ const Database = {
       
       fetch(this.config.webAppUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Evita erro de CORS
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(body)
       })
       .then(res => res.json())
@@ -171,7 +173,6 @@ const Database = {
     }
   },
 
-  // Mantido para não quebrar compatibilidade
   save() { this.saveToLocalStorage(); },
 
   // ============================================================
@@ -212,7 +213,7 @@ const Database = {
   getHistory() { return this.cache.history || []; },
 
   // ============================================================
-  // SETTERS (Escrita / Modificação) -> AGORA SALVAM NO SHEETS
+  // SETTERS (Escrita / Modificação)
   // ============================================================
   addCategory(name, icon = 'fa-tag') {
     const slug = this.generateSlug(name);
@@ -222,6 +223,7 @@ const Database = {
     this.saveToLocalStorage();
     
     this.syncWithBackend('addCategory', { name, icon }); 
+    this.addHistory(`Criou categoria: ${name}`);
     return newCategory;
   },
 
@@ -234,6 +236,7 @@ const Database = {
       this.saveToLocalStorage();
       
       this.syncWithBackend('editCategory', { id, data }); 
+      this.addHistory(`Editou categoria: ${cat.name}`);
       return true;
     }
     return false;
@@ -245,6 +248,7 @@ const Database = {
       cat.active = false; 
       this.saveToLocalStorage(); 
       this.syncWithBackend('editCategory', { id, data: { active: false } }); 
+      this.addHistory(`Desativou categoria: ${cat.name}`);
       return true; 
     }
     return false;
@@ -256,6 +260,7 @@ const Database = {
       if (cat) cat.order = index + 1;
     });
     this.saveToLocalStorage();
+    this.addHistory('Reordenou categorias');
   },
 
   addMateria(data) {
@@ -264,12 +269,13 @@ const Database = {
       id: maxId + 1, title: data.title.trim(), category: data.category, 
       slug: this.generateSlug(data.title), content: data.content || '', 
       image: data.image || '', status: data.status || 'draft', 
-      author: data.author || 'admin', date: new Date().toISOString(), views: 0 
+      author: data.author || this.currentUser || 'admin', date: new Date().toISOString(), views: 0 
     };
     this.cache.materias.push(newMateria);
     this.saveToLocalStorage();
     
     this.syncWithBackend('addMateria', { data: newMateria }); 
+    this.addHistory(`Criou matéria: ${data.title}`);
     return newMateria;
   },
 
@@ -284,6 +290,7 @@ const Database = {
       this.saveToLocalStorage();
       
       this.syncWithBackend('editMateria', { id, data }); 
+      this.addHistory(`Editou matéria: ${mat.title}`);
       return true;
     }
     return false;
@@ -292,10 +299,12 @@ const Database = {
   deleteMateria(id) {
     const idx = this.cache.materias.findIndex(m => m.id === id);
     if (idx > -1) {
+      const title = this.cache.materias[idx].title;
       this.cache.materias.splice(idx, 1);
       this.saveToLocalStorage();
       
       this.syncWithBackend('deleteMateria', { id }); 
+      this.addHistory(`Excluiu matéria: ${title}`);
       return true;
     }
     return false;
@@ -306,7 +315,6 @@ const Database = {
     if (mat) {
       mat.views = (mat.views || 0) + 1;
       this.saveToLocalStorage();
-      
       this.syncWithBackend('incrementViews', { id }); 
     }
   },
@@ -321,6 +329,7 @@ const Database = {
     this.saveToLocalStorage();
     
     this.syncWithBackend('updateSettings', { settings: this.getSettings() }); 
+    this.addHistory('Atualizou configurações do site');
     return this.getSettings();
   },
 
@@ -330,6 +339,7 @@ const Database = {
     this.saveToLocalStorage();
     
     this.syncWithBackend('addUser', { username, password, level, name }); 
+    this.addHistory(`Adicionou usuário: ${username}`);
     return true;
   },
 
@@ -339,27 +349,25 @@ const Database = {
     this.saveToLocalStorage();
     
     this.syncWithBackend('deleteUser', { username }); 
+    this.addHistory(`Removeu usuário: ${username}`);
     return true;
   },
 
-  addHistory(message, user = 'admin') {
+  addHistory(message, user) {
+    const activeUser = user || this.currentUser || 'admin';
     if (!this.cache.history) this.cache.history = [];
-    this.cache.history.unshift({ message, user: user || 'admin', time: new Date().toISOString() });
+    this.cache.history.unshift({ message, user: activeUser, time: new Date().toISOString() });
     if (this.cache.history.length > 100) this.cache.history = this.cache.history.slice(0, 100);
     
-    this.syncWithBackend('addHistory', { message, user }); 
+    this.syncWithBackend('addHistory', { message, user: activeUser }); 
   },
 
   generateSlug(text) {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
   },
 
-  // ============================================================
-  // INICIALIZADOR INTELIGENTE (SEM TELA BRANCA)
-  // ============================================================
   async init() {
     const hasLocalData = this.loadLocal();
-    
     const isAdmin = window.location.pathname.includes('admin');
     const urlParams = new URLSearchParams(window.location.search);
     const noticiaId = parseInt(urlParams.get('id'));
@@ -369,11 +377,9 @@ const Database = {
       isMissingArticle = !this.cache.materias.find(m => m.id === noticiaId);
     }
 
-    // Se é o Painel Admin, se não tem dados locais, ou se o link é novo e não tá na memória: Aguarda o Sheets.
     if (!hasLocalData || isAdmin || isMissingArticle) {
       await this.load();
     } else {
-      // Caso contrário, libera a tela NA HORA e atualiza os dados em background silenciosamente!
       this.load().catch(e => console.warn('Erro sync background', e));
     }
     
