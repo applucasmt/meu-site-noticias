@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NewsPortal · Admin</title>
   
-  <!-- Dependências: LocalForage, FontAwesome e Quill (Editor Rich Text) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
   
   <style>
-    /* ============================================================
-       ADMIN - ESTILOS GERAIS
-    ============================================================ */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1e2a3a; padding: 1rem; }
     .admin-container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 1.5rem; padding: 2rem; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
@@ -66,21 +62,16 @@
     .admin-form .form-group { flex: 1; min-width: 180px; }
     .admin-form label { display: block; font-size: 0.8rem; font-weight: 600; color: #4a5b6e; margin-bottom: 0.2rem; }
     .admin-form input, .admin-form select { width: 100%; padding: 0.6rem 0.8rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.9rem; transition: 0.2s; }
-    .admin-form input:focus, .admin-form select:focus { border-color: #3498db; outline: none; }
     .admin-form button { padding: 0.6rem 1.5rem; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; min-width: 120px; }
-    .admin-form button:hover { background: #229954; }
     .admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     .admin-table th { text-align: left; padding: 0.8rem; background: #f8f9fa; font-weight: 600; border-bottom: 2px solid #eef2f7; }
     .admin-table td { padding: 0.8rem; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
     .admin-table .drag-handle { cursor: grab; color: #bcc9db; padding: 0 0.5rem; }
     .admin-table .btn-icon { background: none; border: none; cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 4px; transition: 0.2s; font-size: 0.9rem; }
-    .admin-table .btn-icon:hover { background: #f0f3f8; }
-    .admin-table .btn-icon.btn-danger:hover { background: #fee; color: #e74c3c; }
     .status-badge { padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
     .status-badge.active { background: #d4edda; color: #155724; }
     .status-badge.inactive { background: #f8d7da; color: #721c24; }
     
-    /* ====== CSS DAS MATÉRIAS COM IMAGEM ====== */
     .materia-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; border-bottom: 1px solid #eef2f7; flex-wrap: wrap; gap: 1rem; }
     .materia-item .materia-thumb { width: 60px; height: 60px; border-radius: 8px; background: #eef2f7; display: flex; align-items: center; justify-content: center; color: #bcc9db; font-size: 1.5rem; flex-shrink: 0; overflow: hidden; }
     .materia-item .materia-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -90,8 +81,7 @@
     .materia-item .materia-actions { display: flex; gap: 0.3rem; }
     .materia-item .materia-actions button { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; color:white; }
     
-    .btn-edit { background: #3498db; } .btn-edit:hover { background: #2980b9; }
-    .btn-delete { background: #e74c3c; } .btn-delete:hover { background: #c0392b; }
+    .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
     .status-published { background: #27ae60; color: white; padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; }
     .status-draft { background: #f39c12; color: white; padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; }
     .history-item { padding: 0.6rem 0; border-bottom: 1px solid #eef2f7; display: flex; justify-content: space-between; font-size: 0.9rem; }
@@ -102,20 +92,10 @@
     .settings-grid .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
     .settings-grid .form-group label { font-size: 0.8rem; font-weight: 600; color: #4a5b6e; }
     .settings-grid .form-group input, .settings-grid .form-group select { padding: 0.6rem 0.8rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.9rem; transition: 0.2s; }
-    .settings-grid .form-group input:focus, .settings-grid .form-group select:focus { border-color: #3498db; outline: none; }
     .settings-grid .form-group .color-input-group { display: flex; align-items: center; gap: 0.5rem; }
     .settings-grid .form-group .color-input-group input[type="color"] { width: 50px; height: 40px; border: 2px solid #e0e6ed; border-radius: 6px; padding: 2px; cursor: pointer; }
     .settings-grid .form-group .color-input-group input[type="text"] { flex: 1; }
-    .btn-save-settings { grid-column: 1 / -1; padding: 0.8rem; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .btn-save-settings:hover { background: #229954; }
-    .preview-box { margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 0.8rem; }
-    .preview-box .preview-content { margin-top: 0.5rem; padding: 1rem; border-radius: 0.5rem; border: 2px dashed #e0e6ed; }
-    .user-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; border-bottom: 1px solid #eef2f7; flex-wrap: wrap; gap: 0.5rem; }
-    .user-item .user-role { background: #3498db; color: white; padding: 0.1rem 0.6rem; border-radius: 12px; font-size: 0.7rem; margin-left: 0.5rem; }
-    .user-item .btn-delete-user { background: #e74c3c; color: white; border: none; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer; }
-    .user-item .btn-delete-user:hover { background: #c0392b; }
     
-    /* MODAL DO EDITOR */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     .modal-overlay.visible { display: flex; }
     .modal-box { background: white; padding: 2rem; border-radius: 1.5rem; max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto; }
@@ -125,7 +105,7 @@
     .modal-box label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; color: #2c3e50; margin-top: 1rem; }
     .modal-box input[type="text"], .modal-box select { width: 100%; padding: 0.7rem 1rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.95rem; }
     
-    /* OVERRIDES DO QUILL EDITOR */
+    /* QUILL EDITOR OVERRIDES */
     #editor-container { height: 300px; font-family: inherit; font-size: 1rem; border-radius: 0 0 8px 8px; border: 2px solid #e0e6ed; border-top: none; }
     .ql-toolbar.ql-snow { border: 2px solid #e0e6ed; border-radius: 8px 8px 0 0; background: #f8f9fa; }
     
@@ -133,21 +113,14 @@
     .editor-actions button { padding: 0.6rem 1.5rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; }
     .btn-publish { background: #27ae60; } .btn-preview { background: #8e44ad; } .btn-draft { background: #f39c12; } .btn-cancel { background: #e74c3c; }
 
-    /* UPLOAD UI */
     .upload-group { display: flex; gap: 0.5rem; }
     .btn-upload { background: #3498db; color: white; border: none; padding: 0 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; }
     
-    @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 640px) {
-      .admin-container { padding: 1rem; } .admin-header { flex-direction: column; align-items: stretch; }
-      .admin-form { flex-direction: column; } .admin-form .form-group { min-width: 100%; }
-      .admin-table { font-size: 0.8rem; } .admin-table th, .admin-table td { padding: 0.5rem; } .modal-box { padding: 1rem; }
-    }
+    @media (max-width: 640px) { .admin-header { flex-direction: column; align-items: stretch; } .admin-form { flex-direction: column; } .modal-box { padding: 1rem; } }
   </style>
 </head>
 <body>
 
-<!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
   <form class="login-box" onsubmit="performLogin(event)">
     <i class="fas fa-user-circle" style="font-size: 3.5rem; color: #d32f2f; margin-bottom: 1rem;"></i>
@@ -161,7 +134,6 @@
 </div>
 
 <div class="admin-container">
-  <!-- HEADER -->
   <div class="admin-header">
     <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
     <div class="header-actions">
@@ -170,17 +142,15 @@
     </div>
   </div>
 
-  <!-- TABS -->
   <div class="admin-tabs">
-    <button class="active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
-    <button onclick="switchTab('settings')"><i class="fas fa-palette"></i> Personalizar</button>
-    <button onclick="switchTab('categories')"><i class="fas fa-tags"></i> Categorias</button>
-    <button onclick="switchTab('materias')"><i class="fas fa-newspaper"></i> Matérias</button>
-    <button onclick="switchTab('users')"><i class="fas fa-users"></i> Usuários</button>
-    <button onclick="switchTab('history')"><i class="fas fa-history"></i> Histórico</button>
+    <button class="active" onclick="switchTab('dashboard')">Dashboard</button>
+    <button onclick="switchTab('settings')">Personalizar</button>
+    <button onclick="switchTab('categories')">Categorias</button>
+    <button onclick="switchTab('materias')">Matérias</button>
+    <button onclick="switchTab('users')">Usuários</button>
+    <button onclick="switchTab('history')">Histórico</button>
   </div>
 
-  <!-- DASHBOARD -->
   <div class="admin-panel active" id="panel-dashboard">
     <div class="stats-grid">
       <div class="stat-card"><div class="number" id="totalMaterias">0</div><div class="label">Matérias Publicadas</div></div>
@@ -191,20 +161,16 @@
     <div id="lastMaterias"></div>
   </div>
 
-  <!-- SETTINGS -->
   <div class="admin-panel" id="panel-settings">
-    <h3><i class="fas fa-palette"></i> Personalização do Site</h3>
-    <p style="color:#6b7a8f; margin-bottom:1rem;">Altere as cores, fontes e elementos visuais do site em tempo real.</p>
     <form id="settingsForm" class="settings-grid">
       <div class="full-width"><h4><i class="fas fa-paint-bucket"></i> Cores</h4></div>
-      <div class="form-group"><label>Cor Primária</label><div class="color-input-group"><input type="color" id="primaryColor"><input type="text" id="primaryColorText"></div></div>
-      <div class="form-group"><label>Cor Secundária</label><div class="color-input-group"><input type="color" id="secondaryColor"><input type="text" id="secondaryColorText"></div></div>
-      <div class="form-group"><label>Cor de Fundo</label><div class="color-input-group"><input type="color" id="backgroundColor"><input type="text" id="backgroundColorText"></div></div>
-      <div class="form-group"><label>Cor do Texto</label><div class="color-input-group"><input type="color" id="textColor"><input type="text" id="textColorText"></div></div>
-      <div class="full-width"><h4><i class="fas fa-font"></i> Fontes</h4></div>
+      <div class="form-group"><label>Cor Primária</label><input type="color" id="primaryColor"></div>
+      <div class="form-group"><label>Cor Secundária</label><input type="color" id="secondaryColor"></div>
+      <div class="form-group"><label>Cor de Fundo</label><input type="color" id="backgroundColor"></div>
+      <div class="form-group"><label>Cor do Texto</label><input type="color" id="textColor"></div>
+      <div class="full-width"><h4><i class="fas fa-font"></i> Fontes & Logo</h4></div>
       <div class="form-group"><label>Fonte Principal</label><input type="text" id="fontFamily"></div>
       <div class="form-group"><label>Fonte de Títulos</label><input type="text" id="headingFont"></div>
-      <div class="full-width"><h4><i class="fas fa-tag"></i> Logo</h4></div>
       <div class="form-group"><label>Texto do Logo</label><input type="text" id="logoText"></div>
       <div class="form-group"><label>Subtexto do Logo</label><input type="text" id="logoSubtext"></div>
       <div class="form-group"><label>Ícone do Logo</label><input type="text" id="logoIcon"></div>
@@ -215,9 +181,7 @@
     </form>
   </div>
 
-  <!-- CATEGORIAS -->
   <div class="admin-panel" id="panel-categories">
-    <h3><i class="fas fa-plus-circle"></i> Nova Categoria</h3>
     <form class="admin-form" id="categoryForm">
       <div class="form-group"><label>Nome da Categoria</label><input type="text" id="catName" required></div>
       <div class="form-group"><label>Ícone (Font Awesome)</label><input type="text" id="catIcon" value="fa-tag"></div>
@@ -229,31 +193,16 @@
     </table>
   </div>
 
-  <!-- MATÉRIAS -->
   <div class="admin-panel" id="panel-materias">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
-      <h3><i class="fas fa-newspaper"></i> Gerenciar Matérias</h3>
-      <button onclick="openEditor()" style="background:#27ae60; color:white; border:none; padding:0.5rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;"><i class="fas fa-plus"></i> Nova Matéria</button>
-    </div>
+    <button onclick="openEditor()" style="background:#27ae60; color:white; border:none; padding:0.5rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer; margin-bottom:1rem;"><i class="fas fa-plus"></i> Nova Matéria</button>
     <div id="materiasListAdmin"></div>
   </div>
 
-  <!-- USUÁRIOS -->
   <div class="admin-panel" id="panel-users">
-    <h3><i class="fas fa-user-plus"></i> Novo Usuário</h3>
-    <form class="admin-form" id="userForm">
-      <div class="form-group"><label>Usuário</label><input type="text" id="newUsername" required></div>
-      <div class="form-group"><label>Senha</label><input type="password" id="newPassword" required></div>
-      <div class="form-group"><label>Nível</label><select id="newUserLevel"><option value="admin">Administrador</option><option value="editor">Editor</option><option value="journalist">Jornalista</option></select></div>
-      <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
-    </form>
-    <h3 style="margin-top:2rem;"><i class="fas fa-users"></i> Usuários Cadastrados</h3>
     <div id="usersList"></div>
   </div>
 
-  <!-- HISTÓRICO -->
   <div class="admin-panel" id="panel-history">
-    <h3><i class="fas fa-history"></i> Histórico de Alterações</h3>
     <div id="historyListAdmin"></div>
   </div>
 
@@ -293,9 +242,6 @@
   let editingMateriaId = null;
   let quill; 
 
-  // ==========================================
-  // AUTENTICAÇÃO SEGURA (ANTI-TRAVAMENTO)
-  // ==========================================
   async function performLogin(e) {
     e.preventDefault();
     const form = e.target;
@@ -320,9 +266,8 @@
         alert('❌ Usuário ou senha incorretos!\n\n(Ou você esqueceu de gerar a "Nova Implantação" no Apps Script depois de atualizar o código)');
       }
     } catch (err) {
-      alert('❌ Erro de conexão! O Google retornou uma página de erro em vez dos dados.\n\nSOLUÇÃO OBRIGATÓRIA:\n1. Vá no Apps Script\n2. Clique em "Implantar" -> "Nova Implantação"\n3. Copie o NOVO link gerado\n4. Cole o link no seu arquivo database.js!');
+      alert('❌ Erro de conexão com o Google Apps Script.\n\nSOLUÇÃO OBRIGATÓRIA:\n1. Vá no Apps Script\n2. Clique em "Implantar" -> "Nova Implantação"\n3. Copie o NOVO link gerado\n4. Cole o link no seu arquivo database.js!');
     } finally {
-      // Libera o botão independente de falha
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
     }
@@ -390,15 +335,12 @@
     ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon'].forEach(id => {
       if(document.getElementById(id)) document.getElementById(id).value = s[id] || '';
     });
-    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor'].forEach(id => {
-      if(document.getElementById(id+'Text')) document.getElementById(id+'Text').value = s[id] || '';
-    });
   }
 
   document.getElementById('settingsForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const s = {};
-    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon', 'containerMaxWidth', 'borderRadius'].forEach(id => {
+    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon'].forEach(id => {
       if(document.getElementById(id)) s[id] = document.getElementById(id).value;
     });
     window.DB.updateSettings(s); alert('Configurações salvas!');
@@ -508,8 +450,7 @@
     
     const loggedUser = sessionStorage.getItem('newsportal_user');
     
-    // Se o usuário logou, ou o banco carregou e ele já tem sessão salva offline
-    if (loggedUser && (window.DB.getUsers()[loggedUser] || window.DB.cache.loaded)) {
+    if (loggedUser) {
       window.DB.currentUser = loggedUser;
       document.getElementById('loginOverlay').style.display = 'none';
       initAdminPanel();
