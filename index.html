@@ -55,6 +55,10 @@
     .sub-box button { background: #27ae60; color: white; border: none; padding: 0.8rem; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer;}
     .close-sub { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6b7a8f; }
 
+    .lock-icon { position: fixed; bottom: 20px; right: 20px; background: #1e2a3a; color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: all 0.3s; z-index: 100; box-shadow: 0 4px 16px rgba(0,0,0,0.25); font-size: 1.2rem; }
+    .lock-icon.visible { opacity: 0.95; }
+    .lock-icon:hover { opacity: 1 !important; transform: scale(1.1); }
+
     @media (max-width: 900px) { .news-grid { grid-template-columns: 1fr; } }
     @media (max-width: 640px) { .main-nav { font-size: 0.85rem; justify-content: center; } .news-secondary { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 430px) { .news-secondary { grid-template-columns: 1fr; } }
@@ -109,6 +113,11 @@
     <div class="section-title"><span><i class="fas fa-arrow-right"></i> Mais notícias</span></div>
     <div class="news-secondary" id="materiasList"></div>
     <button class="btn-load-more" id="btnLoadMore" onclick="loadMore()">Carregar mais notícias <i class="fas fa-chevron-down"></i></button>
+  </div>
+
+  <!-- CADEADO DO ADMIN -->
+  <div class="lock-icon" id="lockIcon" title="Pressione Ctrl e clique para acessar o painel admin">
+    <i class="fas fa-lock"></i>
   </div>
 
   <script src="data/database.js"></script>
@@ -178,13 +187,19 @@
       document.getElementById('subscribeModal').style.display = 'none';
     }
 
+    // ATALHO CTRL + CLIQUE
+    let ctrlPressed = false;
+    const lockIcon = document.getElementById('lockIcon');
+    document.addEventListener('keydown', (e) => { if (e.key === 'Control') { ctrlPressed = true; if (lockIcon) lockIcon.classList.add('visible'); } });
+    document.addEventListener('keyup', (e) => { if (e.key === 'Control') { ctrlPressed = false; setTimeout(() => { if (!ctrlPressed && lockIcon) { lockIcon.classList.remove('visible'); } }, 300); } });
+    if (lockIcon) { lockIcon.addEventListener('click', () => { window.location.href = 'admin.html'; }); }
+
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         if (typeof window.Database === 'undefined') {
           throw new Error('O arquivo database.js não carregou. Verifique a sua conexão ou arquivo.');
         }
 
-        // A CORREÇÃO PRINCIPAL ESTÁ AQUI (Atribuição do window.DB)
         window.DB = await window.Database.init();
         
         applySettings(); 
@@ -193,11 +208,13 @@
         renderSidebar(); 
         renderMateriasList(true);
         
+        // Esconde o overlay e mostra o conteúdo
         document.getElementById('loadingOverlay').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
 
       } catch (error) {
         console.error('Erro Fatal de Carregamento:', error);
+        
         document.getElementById('loadingOverlay').innerHTML = `
           <div style="text-align:center; padding: 2rem; background: white; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
             <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#e74c3c; margin-bottom:1rem;"></i>
