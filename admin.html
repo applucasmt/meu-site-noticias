@@ -62,12 +62,16 @@
     .admin-form .form-group { flex: 1; min-width: 180px; }
     .admin-form label { display: block; font-size: 0.8rem; font-weight: 600; color: #4a5b6e; margin-bottom: 0.2rem; }
     .admin-form input, .admin-form select { width: 100%; padding: 0.6rem 0.8rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.9rem; transition: 0.2s; }
+    .admin-form input:focus, .admin-form select:focus { border-color: #3498db; outline: none; }
     .admin-form button { padding: 0.6rem 1.5rem; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; min-width: 120px; }
+    .admin-form button:hover { background: #229954; }
     .admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     .admin-table th { text-align: left; padding: 0.8rem; background: #f8f9fa; font-weight: 600; border-bottom: 2px solid #eef2f7; }
     .admin-table td { padding: 0.8rem; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
     .admin-table .drag-handle { cursor: grab; color: #bcc9db; padding: 0 0.5rem; }
     .admin-table .btn-icon { background: none; border: none; cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 4px; transition: 0.2s; font-size: 0.9rem; }
+    .admin-table .btn-icon:hover { background: #f0f3f8; }
+    .admin-table .btn-icon.btn-danger:hover { background: #fee; color: #e74c3c; }
     .status-badge { padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
     .status-badge.active { background: #d4edda; color: #155724; }
     .status-badge.inactive { background: #f8d7da; color: #721c24; }
@@ -81,7 +85,8 @@
     .materia-item .materia-actions { display: flex; gap: 0.3rem; }
     .materia-item .materia-actions button { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; color:white; }
     
-    .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
+    .btn-edit { background: #3498db; } .btn-edit:hover { background: #2980b9; }
+    .btn-delete { background: #e74c3c; } .btn-delete:hover { background: #c0392b; }
     .status-published { background: #27ae60; color: white; padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; }
     .status-draft { background: #f39c12; color: white; padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; }
     .history-item { padding: 0.6rem 0; border-bottom: 1px solid #eef2f7; display: flex; justify-content: space-between; font-size: 0.9rem; }
@@ -92,6 +97,7 @@
     .settings-grid .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
     .settings-grid .form-group label { font-size: 0.8rem; font-weight: 600; color: #4a5b6e; }
     .settings-grid .form-group input, .settings-grid .form-group select { padding: 0.6rem 0.8rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.9rem; transition: 0.2s; }
+    .settings-grid .form-group input:focus, .settings-grid .form-group select:focus { border-color: #3498db; outline: none; }
     .settings-grid .form-group .color-input-group { display: flex; align-items: center; gap: 0.5rem; }
     .settings-grid .form-group .color-input-group input[type="color"] { width: 50px; height: 40px; border: 2px solid #e0e6ed; border-radius: 6px; padding: 2px; cursor: pointer; }
     .settings-grid .form-group .color-input-group input[type="text"] { flex: 1; }
@@ -105,7 +111,6 @@
     .modal-box label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; color: #2c3e50; margin-top: 1rem; }
     .modal-box input[type="text"], .modal-box select { width: 100%; padding: 0.7rem 1rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.95rem; }
     
-    /* QUILL EDITOR OVERRIDES */
     #editor-container { height: 300px; font-family: inherit; font-size: 1rem; border-radius: 0 0 8px 8px; border: 2px solid #e0e6ed; border-top: none; }
     .ql-toolbar.ql-snow { border: 2px solid #e0e6ed; border-radius: 8px 8px 0 0; background: #f8f9fa; }
     
@@ -122,7 +127,7 @@
 <body>
 
 <div id="loginOverlay">
-  <form class="login-box" onsubmit="performLogin(event)">
+  <form class="login-box" id="loginForm">
     <i class="fas fa-user-circle" style="font-size: 3.5rem; color: #d32f2f; margin-bottom: 1rem;"></i>
     <h2>Acesso Restrito</h2>
     <p>Insira suas credenciais para acessar o painel</p>
@@ -164,10 +169,10 @@
   <div class="admin-panel" id="panel-settings">
     <form id="settingsForm" class="settings-grid">
       <div class="full-width"><h4><i class="fas fa-paint-bucket"></i> Cores</h4></div>
-      <div class="form-group"><label>Cor Primária</label><input type="color" id="primaryColor"></div>
-      <div class="form-group"><label>Cor Secundária</label><input type="color" id="secondaryColor"></div>
-      <div class="form-group"><label>Cor de Fundo</label><input type="color" id="backgroundColor"></div>
-      <div class="form-group"><label>Cor do Texto</label><input type="color" id="textColor"></div>
+      <div class="form-group"><label>Cor Primária</label><div class="color-input-group"><input type="color" id="primaryColor"><input type="text" id="primaryColorText"></div></div>
+      <div class="form-group"><label>Cor Secundária</label><div class="color-input-group"><input type="color" id="secondaryColor"><input type="text" id="secondaryColorText"></div></div>
+      <div class="form-group"><label>Cor de Fundo</label><div class="color-input-group"><input type="color" id="backgroundColor"><input type="text" id="backgroundColorText"></div></div>
+      <div class="form-group"><label>Cor do Texto</label><div class="color-input-group"><input type="color" id="textColor"><input type="text" id="textColorText"></div></div>
       <div class="full-width"><h4><i class="fas fa-font"></i> Fontes & Logo</h4></div>
       <div class="form-group"><label>Fonte Principal</label><input type="text" id="fontFamily"></div>
       <div class="form-group"><label>Fonte de Títulos</label><input type="text" id="headingFont"></div>
@@ -199,6 +204,13 @@
   </div>
 
   <div class="admin-panel" id="panel-users">
+    <form class="admin-form" id="userForm">
+      <div class="form-group"><label>Usuário</label><input type="text" id="newUsername" required></div>
+      <div class="form-group"><label>Senha</label><input type="password" id="newPassword" required></div>
+      <div class="form-group"><label>Nível</label><select id="newUserLevel"><option value="admin">Administrador</option><option value="editor">Editor</option><option value="journalist">Jornalista</option></select></div>
+      <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
+    </form>
+    <h3 style="margin-top:2rem;"><i class="fas fa-users"></i> Usuários Cadastrados</h3>
     <div id="usersList"></div>
   </div>
 
@@ -225,7 +237,6 @@
     </div>
 
     <label>Conteúdo</label>
-    <!-- Editor Quill -->
     <div id="editor-container"></div>
 
     <div class="editor-actions">
@@ -241,44 +252,6 @@
 <script>
   let editingMateriaId = null;
   let quill; 
-
-  async function performLogin(e) {
-    e.preventDefault();
-    const form = e.target;
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    
-    submitBtn.textContent = 'Autenticando...';
-    submitBtn.disabled = true;
-    
-    const u = document.getElementById('loginUser').value.trim();
-    const p = document.getElementById('loginPass').value.trim();
-    
-    try {
-      const res = await window.DB.login(u, p);
-      
-      if (res && res.success && res.user) {
-        sessionStorage.setItem('newsportal_user', res.user.username);
-        window.DB.currentUser = res.user.name;
-        document.getElementById('loginOverlay').style.display = 'none';
-        initAdminPanel();
-      } else {
-        alert('❌ Usuário ou senha incorretos!\n\n(Ou você esqueceu de gerar a "Nova Implantação" no Apps Script depois de atualizar o código)');
-      }
-    } catch (err) {
-      alert('❌ Erro de conexão com o Google Apps Script.\n\nSOLUÇÃO OBRIGATÓRIA:\n1. Vá no Apps Script\n2. Clique em "Implantar" -> "Nova Implantação"\n3. Copie o NOVO link gerado\n4. Cole o link no seu arquivo database.js!');
-    } finally {
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
-    }
-  }
-
-  function logout() {
-    if (confirm('Deseja sair?')) {
-      sessionStorage.removeItem('newsportal_user');
-      window.location.reload();
-    }
-  }
 
   function initAdminPanel() {
     quill = new Quill('#editor-container', {
@@ -332,19 +305,13 @@
 
   function loadSettings() {
     const s = window.DB.getSettings();
-    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon'].forEach(id => {
+    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon', 'containerMaxWidth', 'borderRadius'].forEach(id => {
       if(document.getElementById(id)) document.getElementById(id).value = s[id] || '';
     });
-  }
-
-  document.getElementById('settingsForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const s = {};
-    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon'].forEach(id => {
-      if(document.getElementById(id)) s[id] = document.getElementById(id).value;
+    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor'].forEach(id => {
+      if(document.getElementById(id+'Text')) document.getElementById(id+'Text').value = s[id] || '';
     });
-    window.DB.updateSettings(s); alert('Configurações salvas!');
-  });
+  }
 
   function renderCategories() {
     document.getElementById('categoriesBody').innerHTML = window.DB.getAllCategories().map(cat => `
@@ -360,14 +327,6 @@
   }
 
   function deleteCategory(id) { if (confirm('Desativar categoria?')) { window.DB.deleteCategory(id); renderCategories(); } }
-  
-  document.getElementById('categoryForm').addEventListener('submit', (e) => {
-    e.preventDefault(); 
-    window.DB.addCategory(document.getElementById('catName').value, document.getElementById('catIcon').value);
-    document.getElementById('catName').value = ''; 
-    document.getElementById('catIcon').value = 'fa-tag';
-    renderCategories();
-  });
 
   function editMateria(id) {
     const materia = window.DB.getMateriaById(id);
@@ -421,6 +380,7 @@
   function renderHistory() { document.getElementById('historyListAdmin').innerHTML = window.DB.getHistory().map(i => `<div class="history-item"><span><strong>${i.user}</strong>: ${i.message}</span><span>${formatDate(i.time)}</span></div>`).join(''); }
 
   function renderUsers() {
+    if (typeof window.DB.getUsers !== 'function') return;
     document.getElementById('usersList').innerHTML = Object.entries(window.DB.getUsers()).map(([username, data]) => `
       <div class="user-item">
         <div><strong>${username}</strong> (${data.name}) <span class="user-role">${data.level}</span></div>
@@ -429,32 +389,116 @@
     `).join('');
   }
 
-  document.getElementById('userForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = document.getElementById('newUsername').value.trim();
-    const password = document.getElementById('newPassword').value.trim();
-    const level = document.getElementById('newUserLevel').value;
-    if (!username || !password) return alert('Preencha todos os campos.');
-    if (!window.DB.addUser(username, password, level, username)) return alert('Usuário já existe!');
-    renderUsers(); document.getElementById('userForm').reset(); alert('✅ Usuário criado com sucesso!');
-  });
-
   function deleteUser(username) {
     if (username === 'admin') return alert('Não é possível remover o admin.');
     if (confirm(`Remover usuário "${username}"?`)) { window.DB.deleteUser(username); renderUsers(); }
   }
 
+  function logout() {
+    if (confirm('Deseja sair?')) {
+      sessionStorage.removeItem('newsportal_user');
+      window.location.reload();
+    }
+  }
+
+  // ==========================================
+  // INICIALIZAÇÃO SEGURA (Evita travamentos e erros de "null")
+  // ==========================================
   document.addEventListener('DOMContentLoaded', async function() {
-    if (typeof localforage === 'undefined') return;
-    await window.Database.init();
     
-    const loggedUser = sessionStorage.getItem('newsportal_user');
+    // ANEXAR EVENTOS AOS FORMULÁRIOS COM SEGURANÇA
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+      loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('loginBtn');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Autenticando...';
+        submitBtn.disabled = true;
+        
+        const u = document.getElementById('loginUser').value.trim();
+        const p = document.getElementById('loginPass').value.trim();
+        
+        try {
+          if (typeof window.DB.login !== 'function') {
+            alert("❌ O database.js antigo está no site! Copie o database.js da minha resposta anterior para habilitar o login.");
+            return;
+          }
+
+          const res = await window.DB.login(u, p);
+          if (res && res.success && res.user) {
+            sessionStorage.setItem('newsportal_user', res.user.username);
+            window.DB.currentUser = res.user.name;
+            document.getElementById('loginOverlay').style.display = 'none';
+            initAdminPanel();
+          } else {
+            alert('❌ Usuário ou senha incorretos!');
+          }
+        } catch (err) {
+          alert('❌ Erro de conexão com o banco de dados. Atualize o Apps Script.');
+        } finally {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
+      });
+    }
+
+    const settingsForm = document.getElementById('settingsForm');
+    if (settingsForm) {
+      settingsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const s = {};
+        ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon', 'containerMaxWidth', 'borderRadius'].forEach(id => {
+          if(document.getElementById(id)) s[id] = document.getElementById(id).value;
+        });
+        window.DB.updateSettings(s); alert('Configurações salvas!');
+      });
+    }
+
+    const categoryForm = document.getElementById('categoryForm');
+    if (categoryForm) {
+      categoryForm.addEventListener('submit', (e) => {
+        e.preventDefault(); 
+        window.DB.addCategory(document.getElementById('catName').value, document.getElementById('catIcon').value);
+        document.getElementById('catName').value = ''; 
+        document.getElementById('catIcon').value = 'fa-tag';
+        renderCategories();
+      });
+    }
+
+    const userForm = document.getElementById('userForm');
+    if (userForm) {
+      userForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('newUsername').value.trim();
+        const password = document.getElementById('newPassword').value.trim();
+        const level = document.getElementById('newUserLevel').value;
+        if (!username || !password) return alert('Preencha todos os campos.');
+        if (typeof window.DB.addUser !== 'function') return alert('Atualize o database.js.');
+        if (!window.DB.addUser(username, password, level, username)) return alert('Usuário já existe!');
+        renderUsers(); document.getElementById('userForm').reset(); alert('✅ Usuário criado com sucesso!');
+      });
+    }
+
+    // CARREGANDO O BANCO DE DADOS
+    if (typeof localforage === 'undefined') {
+      alert("Aviso: Falha de rede. O sistema tentará carregar sem o cache otimizado.");
+    }
     
-    if (loggedUser) {
-      window.DB.currentUser = loggedUser;
-      document.getElementById('loginOverlay').style.display = 'none';
-      initAdminPanel();
-    } else {
+    try {
+      await window.Database.init();
+      
+      const loggedUser = sessionStorage.getItem('newsportal_user');
+      
+      if (loggedUser && typeof window.DB.getUsers === 'function' && window.DB.getUsers()[loggedUser]) {
+        window.DB.currentUser = loggedUser;
+        document.getElementById('loginOverlay').style.display = 'none';
+        initAdminPanel();
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    } catch (e) {
+      console.error(e);
       document.getElementById('loginOverlay').style.display = 'flex';
     }
   });
