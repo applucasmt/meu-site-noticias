@@ -4,50 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NewsPortal · Admin</title>
+  <!-- LocalForage, FontAwesome e Quill (Editor Rich Text) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  
   <style>
-    /* ============================================================
-       ADMIN - ESTILOS GERAIS
-    ============================================================ */
+    /* Estilos basecidos no seu design original */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1e2a3a; padding: 1rem; }
     .admin-container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 1.5rem; padding: 2rem; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
     .admin-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-bottom: 1rem; border-bottom: 2px solid #eef2f7; margin-bottom: 2rem; }
     .admin-header h1 { display: flex; align-items: center; gap: 0.5rem; font-size: 1.8rem; }
     .admin-header h1 i { color: #d32f2f; }
-    .admin-header .header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .admin-header .header-actions a, .admin-header .header-actions button { padding: 0.5rem 1.2rem; border-radius: 30px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+    .header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .header-actions a, .header-actions button { padding: 0.5rem 1.2rem; border-radius: 30px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
     .btn-back { background: #3498db; color: white; } .btn-back:hover { background: #2980b9; }
     .btn-logout { background: #e74c3c; color: white; } .btn-logout:hover { background: #c0392b; }
+    
     .admin-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px solid #eef2f7; padding-bottom: 0.5rem; }
     .admin-tabs button { padding: 0.5rem 1.2rem; border: none; background: transparent; font-weight: 600; cursor: pointer; border-radius: 8px 8px 0 0; transition: 0.2s; color: #6b7a8f; font-size: 0.9rem; }
     .admin-tabs button:hover { background: #f0f3f8; }
     .admin-tabs button.active { background: #3498db; color: white; }
     .admin-panel { display: none; } .admin-panel.active { display: block; }
     
-    /* LOGIN OVERLAY */
-    #loginOverlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: #f0f2f5; z-index: 10000;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .login-box {
-      background: white; padding: 2.5rem; border-radius: 1.5rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px;
-      text-align: center;
-    }
+    #loginOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f0f2f5; z-index: 10000; display: flex; align-items: center; justify-content: center; }
+    .login-box { background: white; padding: 2.5rem; border-radius: 1.5rem; box-shadow: 0 8px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
     .login-box h2 { font-size: 1.8rem; margin-bottom: 0.5rem; color: #1e2a3a; }
     .login-box p { color: #6b7a8f; margin-bottom: 1.5rem; font-size: 0.9rem; }
-    .login-box input {
-      width: 100%; padding: 0.8rem 1rem; margin-bottom: 1rem;
-      border: 2px solid #e0e6ed; border-radius: 8px; font-size: 1rem; transition: 0.2s;
-    }
+    .login-box input { width: 100%; padding: 0.8rem 1rem; margin-bottom: 1rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 1rem; transition: 0.2s; }
     .login-box input:focus { border-color: #3498db; outline: none; }
-    .login-box button {
-      width: 100%; padding: 0.8rem; background: #d32f2f; color: white;
-      border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600;
-      cursor: pointer; transition: 0.2s;
-    }
+    .login-box button { width: 100%; padding: 0.8rem; background: #d32f2f; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .login-box button:hover { background: #b71c1c; }
 
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
@@ -58,32 +46,23 @@
     .admin-form .form-group { flex: 1; min-width: 180px; }
     .admin-form label { display: block; font-size: 0.8rem; font-weight: 600; color: #4a5b6e; margin-bottom: 0.2rem; }
     .admin-form input, .admin-form select { width: 100%; padding: 0.6rem 0.8rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.9rem; transition: 0.2s; }
-    .admin-form input:focus, .admin-form select:focus { border-color: #3498db; outline: none; }
-    .admin-form button { padding: 0.6rem 1.5rem; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; min-width: 120px; }
-    .admin-form button:hover { background: #229954; }
+    .admin-form button { padding: 0.6rem 1.5rem; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     .admin-table th { text-align: left; padding: 0.8rem; background: #f8f9fa; font-weight: 600; border-bottom: 2px solid #eef2f7; }
     .admin-table td { padding: 0.8rem; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
-    .admin-table .drag-handle { cursor: grab; color: #bcc9db; padding: 0 0.5rem; }
-    .admin-table .btn-icon { background: none; border: none; cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 4px; transition: 0.2s; font-size: 0.9rem; }
-    .admin-table .btn-icon:hover { background: #f0f3f8; }
-    .admin-table .btn-icon.btn-danger:hover { background: #fee; color: #e74c3c; }
+    .admin-table .btn-icon { background: none; border: none; cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.9rem; }
     .status-badge { padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
     .status-badge.active { background: #d4edda; color: #155724; }
     .status-badge.inactive { background: #f8d7da; color: #721c24; }
-
-    /* ====== CSS DAS MATÉRIAS ====== */
+    
     .materia-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; border-bottom: 1px solid #eef2f7; flex-wrap: wrap; gap: 1rem; }
-    .materia-item .materia-thumb { width: 60px; height: 60px; border-radius: 8px; background: #eef2f7; display: flex; align-items: center; justify-content: center; color: #bcc9db; font-size: 1.5rem; flex-shrink: 0; overflow: hidden; }
+    .materia-item .materia-thumb { width: 60px; height: 60px; border-radius: 8px; background: #eef2f7; display: flex; align-items: center; justify-content: center; color: #bcc9db; font-size: 1.5rem; overflow: hidden; flex-shrink: 0;}
     .materia-item .materia-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .materia-item .materia-info { flex: 1; min-width: 200px; }
     .materia-item .materia-info h4 { font-size: 1rem; margin-bottom: 0.2rem; }
     .materia-item .materia-info .materia-meta { font-size: 0.8rem; color: #6b7a8f; }
-    .materia-item .materia-actions { display: flex; gap: 0.3rem; }
-    .materia-item .materia-actions button { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
-    
-    .btn-edit { background: #3498db; color: white; } .btn-edit:hover { background: #2980b9; }
-    .btn-delete { background: #e74c3c; color: white; } .btn-delete:hover { background: #c0392b; }
+    .materia-item .materia-actions button { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; color:white; margin-left:4px; }
+    .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
     .status-published { background: #27ae60; color: white; padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; }
     .status-draft { background: #f39c12; color: white; padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.65rem; font-weight: 600; }
     .history-item { padding: 0.6rem 0; border-bottom: 1px solid #eef2f7; display: flex; justify-content: space-between; font-size: 0.9rem; }
@@ -94,51 +73,32 @@
     .settings-grid .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
     .settings-grid .form-group label { font-size: 0.8rem; font-weight: 600; color: #4a5b6e; }
     .settings-grid .form-group input, .settings-grid .form-group select { padding: 0.6rem 0.8rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.9rem; transition: 0.2s; }
-    .settings-grid .form-group input:focus, .settings-grid .form-group select:focus { border-color: #3498db; outline: none; }
-    .settings-grid .form-group .color-input-group { display: flex; align-items: center; gap: 0.5rem; }
-    .settings-grid .form-group .color-input-group input[type="color"] { width: 50px; height: 40px; border: 2px solid #e0e6ed; border-radius: 6px; padding: 2px; cursor: pointer; }
-    .settings-grid .form-group .color-input-group input[type="text"] { flex: 1; }
-    .btn-save-settings { grid-column: 1 / -1; padding: 0.8rem; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .btn-save-settings:hover { background: #229954; }
-    .preview-box { margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 0.8rem; }
-    .preview-box .preview-content { margin-top: 0.5rem; padding: 1rem; border-radius: 0.5rem; border: 2px dashed #e0e6ed; }
-    .user-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; border-bottom: 1px solid #eef2f7; flex-wrap: wrap; gap: 0.5rem; }
-    .user-item .user-role { background: #3498db; color: white; padding: 0.1rem 0.6rem; border-radius: 12px; font-size: 0.7rem; margin-left: 0.5rem; }
-    .user-item .btn-delete-user { background: #e74c3c; color: white; border: none; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer; }
-    .user-item .btn-delete-user:hover { background: #c0392b; }
     
     /* MODAL */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     .modal-overlay.visible { display: flex; }
-    .modal-box { background: white; padding: 2rem; border-radius: 1.5rem; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; }
+    .modal-box { background: white; padding: 2rem; border-radius: 1.5rem; max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto; }
     .modal-box .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .modal-box .modal-header h3 { font-size: 1.2rem; }
     .modal-box .modal-header .close-modal { background: #e74c3c; color: white; border: none; padding: 0.3rem 1.2rem; border-radius: 6px; cursor: pointer; }
-    .modal-box label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; color: #2c3e50; }
-    .modal-box input[type="text"], .modal-box select { width: 100%; padding: 0.7rem 1rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.95rem; margin-bottom: 1rem; transition: 0.2s; }
-    .modal-box input[type="text"]:focus, .modal-box select:focus { border-color: #3498db; outline: none; }
-    .editor-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 0.5rem; background: #f8f9fa; border-radius: 8px 8px 0 0; border: 2px solid #e0e6ed; border-bottom: none; }
-    .editor-toolbar button { background: white; border: 1px solid #dce1e8; border-radius: 4px; padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; transition: 0.15s; color: #2c3e50; }
-    .editor-toolbar button:hover { background: #3498db; color: white; border-color: #3498db; }
-    .editor-content { border: 2px solid #e0e6ed; border-top: none; border-radius: 0 0 8px 8px; padding: 1rem; min-height: 200px; background: white; font-size: 1rem; line-height: 1.8; margin-bottom: 1rem; outline: none; }
-    .editor-content:focus { border-color: #3498db; }
-    .editor-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
-    .editor-actions button { padding: 0.6rem 1.5rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .btn-publish { background: #27ae60; color: white; } .btn-publish:hover { background: #229954; }
-    .btn-draft { background: #f39c12; color: white; } .btn-draft:hover { background: #d68910; }
-    .btn-cancel { background: #e74c3c; color: white; } .btn-cancel:hover { background: #c0392b; }
+    .modal-box label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; color: #2c3e50; margin-top: 1rem; }
+    .modal-box input[type="text"], .modal-box select { width: 100%; padding: 0.7rem 1rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.95rem; }
+    
+    /* QUILL EDITOR OVERRIDES */
+    #editor-container { height: 300px; font-family: inherit; font-size: 1rem; border-radius: 0 0 8px 8px; border: 2px solid #e0e6ed; border-top: none; }
+    .ql-toolbar.ql-snow { border: 2px solid #e0e6ed; border-radius: 8px 8px 0 0; background: #f8f9fa; }
+    
+    .editor-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .editor-actions button { padding: 0.6rem 1.5rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; }
+    .btn-publish { background: #27ae60; } .btn-preview { background: #8e44ad; } .btn-draft { background: #f39c12; } .btn-cancel { background: #e74c3c; }
 
-    @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 640px) {
-      .admin-container { padding: 1rem; } .admin-header { flex-direction: column; align-items: stretch; }
-      .admin-form { flex-direction: column; } .admin-form .form-group { min-width: 100%; }
-      .admin-table { font-size: 0.8rem; } .admin-table th, .admin-table td { padding: 0.5rem; } .modal-box { padding: 1rem; }
-    }
+    /* IMAGE UPLOAD UI */
+    .upload-group { display: flex; gap: 0.5rem; }
+    .btn-upload { background: #3498db; color: white; border: none; padding: 0 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; }
   </style>
 </head>
 <body>
 
-<!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
   <form class="login-box" onsubmit="performLogin(event)">
     <i class="fas fa-user-circle" style="font-size: 3.5rem; color: #d32f2f; margin-bottom: 1rem;"></i>
@@ -146,13 +106,12 @@
     <p>Insira suas credenciais para acessar o painel</p>
     <input type="text" id="loginUser" placeholder="Usuário" required>
     <input type="password" id="loginPass" placeholder="Senha" required>
-    <button type="submit">Entrar</button>
+    <button type="submit" id="loginBtn">Entrar</button>
     <a href="index.html" style="display: block; margin-top: 1.5rem; color: #6b7a8f; font-size: 0.9rem;"><i class="fas fa-arrow-left"></i> Voltar ao site</a>
   </form>
 </div>
 
 <div class="admin-container">
-  <!-- HEADER -->
   <div class="admin-header">
     <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
     <div class="header-actions">
@@ -161,142 +120,92 @@
     </div>
   </div>
 
-  <!-- TABS -->
   <div class="admin-tabs">
-    <button class="active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
-    <button onclick="switchTab('settings')"><i class="fas fa-palette"></i> Personalizar</button>
-    <button onclick="switchTab('categories')"><i class="fas fa-tags"></i> Categorias</button>
-    <button onclick="switchTab('materias')"><i class="fas fa-newspaper"></i> Matérias</button>
-    <button onclick="switchTab('users')"><i class="fas fa-users"></i> Usuários</button>
-    <button onclick="switchTab('history')"><i class="fas fa-history"></i> Histórico</button>
+    <button class="active" onclick="switchTab('dashboard')">Dashboard</button>
+    <button onclick="switchTab('settings')">Personalizar</button>
+    <button onclick="switchTab('categories')">Categorias</button>
+    <button onclick="switchTab('materias')">Matérias</button>
+    <button onclick="switchTab('users')">Usuários</button>
+    <button onclick="switchTab('history')">Histórico</button>
   </div>
 
-  <!-- DASHBOARD -->
   <div class="admin-panel active" id="panel-dashboard">
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="number" id="totalMaterias">0</div>
-        <div class="label">Matérias Publicadas</div>
-      </div>
-      <div class="stat-card">
-        <div class="number" id="totalCategories">0</div>
-        <div class="label">Categorias</div>
-      </div>
-      <div class="stat-card">
-        <div class="number" id="totalViews">0</div>
-        <div class="label">Visualizações</div>
-      </div>
+      <div class="stat-card"><div class="number" id="totalMaterias">0</div><div class="label">Matérias Publicadas</div></div>
+      <div class="stat-card"><div class="number" id="totalCategories">0</div><div class="label">Categorias</div></div>
+      <div class="stat-card"><div class="number" id="totalViews">0</div><div class="label">Visualizações</div></div>
     </div>
-
     <h3 style="margin-bottom:1rem;"><i class="fas fa-clock"></i> Últimas Matérias</h3>
     <div id="lastMaterias"></div>
   </div>
 
-  <!-- SETTINGS -->
   <div class="admin-panel" id="panel-settings">
-    <h3><i class="fas fa-palette"></i> Personalização do Site</h3>
-    <p style="color:#6b7a8f; margin-bottom:1rem;">Altere as cores, fontes e elementos visuais do site em tempo real.</p>
-
     <form id="settingsForm" class="settings-grid">
       <div class="full-width"><h4><i class="fas fa-paint-bucket"></i> Cores</h4></div>
-      <div class="form-group"><label>Cor Primária</label><div class="color-input-group"><input type="color" id="primaryColor" value="#d32f2f"><input type="text" id="primaryColorText" value="#d32f2f"></div></div>
-      <div class="form-group"><label>Cor Secundária</label><div class="color-input-group"><input type="color" id="secondaryColor" value="#1e2a3a"><input type="text" id="secondaryColorText" value="#1e2a3a"></div></div>
-      <div class="form-group"><label>Cor de Fundo</label><div class="color-input-group"><input type="color" id="backgroundColor" value="#f4f6f9"><input type="text" id="backgroundColorText" value="#f4f6f9"></div></div>
-      <div class="form-group"><label>Cor do Texto</label><div class="color-input-group"><input type="color" id="textColor" value="#1e2a3a"><input type="text" id="textColorText" value="#1e2a3a"></div></div>
-
-      <div class="full-width"><h4><i class="fas fa-font"></i> Fontes</h4></div>
-      <div class="form-group"><label>Fonte Principal</label><select id="fontFamily"><option value="Segoe UI, Roboto, system-ui, sans-serif">Segoe UI</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Georgia, serif">Georgia</option><option value="'Times New Roman', serif">Times New Roman</option><option value="'Courier New', monospace">Courier New</option><option value="system-ui, -apple-system, sans-serif">System UI</option></select></div>
-      <div class="form-group"><label>Fonte de Títulos</label><select id="headingFont"><option value="Segoe UI, Roboto, system-ui, sans-serif">Segoe UI</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Georgia, serif">Georgia</option><option value="'Times New Roman', serif">Times New Roman</option><option value="'Courier New', monospace">Courier New</option><option value="system-ui, -apple-system, sans-serif">System UI</option></select></div>
-
-      <div class="full-width"><h4><i class="fas fa-tag"></i> Logo</h4></div>
-      <div class="form-group"><label>Texto do Logo</label><input type="text" id="logoText" value="NewsPortal"></div>
-      <div class="form-group"><label>Subtexto do Logo</label><input type="text" id="logoSubtext" value="· 2026"></div>
-      <div class="form-group"><label>Ícone do Logo (Font Awesome)</label><input type="text" id="logoIcon" value="fa-newspaper"><small style="color:#6b7a8f; font-size:0.7rem;">Ex: fa-newspaper, fa-globe, fa-bolt</small></div>
-
-      <div class="full-width"><h4><i class="fas fa-layer-group"></i> Layout</h4></div>
-      <div class="form-group"><label>Largura Máxima</label><select id="containerMaxWidth"><option value="1280px">1280px (Padrão)</option><option value="1440px">1440px (Grande)</option><option value="1100px">1100px (Compacto)</option><option value="100%">100% (Fluido)</option></select></div>
-      <div class="form-group"><label>Raio das Bordas</label><select id="borderRadius"><option value="1.5rem">1.5rem (Padrão)</option><option value="0.5rem">0.5rem (Pequeno)</option><option value="2rem">2rem (Grande)</option><option value="0">0 (Sem borda)</option></select></div>
-
+      <div class="form-group"><label>Cor Primária</label><input type="color" id="primaryColor"></div>
+      <div class="form-group"><label>Cor Secundária</label><input type="color" id="secondaryColor"></div>
+      <div class="form-group"><label>Cor de Fundo</label><input type="color" id="backgroundColor"></div>
+      <div class="form-group"><label>Cor do Texto</label><input type="color" id="textColor"></div>
+      <div class="full-width"><h4><i class="fas fa-font"></i> Fontes & Logo</h4></div>
+      <div class="form-group"><label>Fonte Principal</label><input type="text" id="fontFamily"></div>
+      <div class="form-group"><label>Fonte de Títulos</label><input type="text" id="headingFont"></div>
+      <div class="form-group"><label>Texto do Logo</label><input type="text" id="logoText"></div>
+      <div class="form-group"><label>Subtexto do Logo</label><input type="text" id="logoSubtext"></div>
+      <div class="form-group"><label>Ícone do Logo</label><input type="text" id="logoIcon"></div>
       <button type="submit" class="btn-save-settings"><i class="fas fa-save"></i> Salvar Personalização</button>
     </form>
-
-    <div class="preview-box">
-      <h4><i class="fas fa-eye"></i> Preview ao vivo</h4>
-      <div class="preview-content" id="livePreview">
-        <div style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.5rem;" id="previewIcon"><i class="fas fa-newspaper"></i></span><span style="font-size:1.2rem; font-weight:700;" id="previewLogo">NewsPortal <small style="font-weight:400; font-size:0.7rem; color:#6b7a8f;">· 2026</small></span></div>
-        <div style="margin-top:0.5rem; display:flex; gap:1rem; flex-wrap:wrap;"><span style="background:#d32f2f; color:white; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem;" id="previewButton">Destaque</span><span style="background:#1e2a3a; color:white; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem;" id="previewButton2">Notícia</span></div>
-      </div>
-    </div>
   </div>
 
-  <!-- CATEGORIAS -->
   <div class="admin-panel" id="panel-categories">
-    <h3><i class="fas fa-plus-circle"></i> Nova Categoria</h3>
     <form class="admin-form" id="categoryForm">
-      <div class="form-group"><label>Nome da Categoria</label><input type="text" id="catName" placeholder="Ex: Ciência" required></div>
-      <div class="form-group"><label>Ícone (Font Awesome)</label><input type="text" id="catIcon" placeholder="fa-flask" value="fa-tag"></div>
+      <div class="form-group"><label>Nome da Categoria</label><input type="text" id="catName" required></div>
+      <div class="form-group"><label>Ícone (Font Awesome)</label><input type="text" id="catIcon" value="fa-tag"></div>
       <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
     </form>
-
-    <h3 style="margin-top:2rem;"><i class="fas fa-list"></i> Categorias</h3>
-    <p style="color:#6b7a8f; font-size:0.85rem;">Arraste para reordenar</p>
     <table class="admin-table" id="categoriesTable">
-      <thead><tr><th style="width:30px;">#</th><th>Nome</th><th>Slug</th><th>Ícone</th><th>Status</th><th style="text-align:right;">Ações</th></tr></thead>
+      <thead><tr><th>Nome</th><th>Slug</th><th>Ícone</th><th>Status</th><th style="text-align:right;">Ações</th></tr></thead>
       <tbody id="categoriesBody"></tbody>
     </table>
   </div>
 
-  <!-- MATÉRIAS -->
   <div class="admin-panel" id="panel-materias">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
-      <h3><i class="fas fa-newspaper"></i> Gerenciar Matérias</h3>
-      <button onclick="openEditor()" style="background:#27ae60; color:white; border:none; padding:0.5rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;"><i class="fas fa-plus"></i> Nova Matéria</button>
-    </div>
+    <button onclick="openEditor()" style="background:#27ae60; color:white; border:none; padding:0.5rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer; margin-bottom:1rem;"><i class="fas fa-plus"></i> Nova Matéria</button>
     <div id="materiasListAdmin"></div>
   </div>
 
-  <!-- USUÁRIOS -->
   <div class="admin-panel" id="panel-users">
-    <h3><i class="fas fa-user-plus"></i> Novo Usuário</h3>
-    <form class="admin-form" id="userForm">
-      <div class="form-group"><label>Usuário</label><input type="text" id="newUsername" placeholder="Nome" required></div>
-      <div class="form-group"><label>Senha</label><input type="password" id="newPassword" placeholder="Senha" required></div>
-      <div class="form-group"><label>Nível</label><select id="newUserLevel"><option value="admin">Administrador</option><option value="editor">Editor</option><option value="journalist">Jornalista</option></select></div>
-      <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
-    </form>
-
-    <h3 style="margin-top:2rem;"><i class="fas fa-users"></i> Usuários Cadastrados</h3>
     <div id="usersList"></div>
   </div>
 
-  <!-- HISTÓRICO -->
   <div class="admin-panel" id="panel-history">
-    <h3><i class="fas fa-history"></i> Histórico de Alterações</h3>
     <div id="historyListAdmin"></div>
   </div>
 
 </div>
 
-<!-- MODAL EDITOR -->
+<!-- MODAL EDITOR (QUILL + UPLOAD DE IMAGEM) -->
 <div class="modal-overlay" id="editorModal">
   <div class="modal-box">
-    <div class="modal-header"><h3 id="editorTitle"><i class="fas fa-edit"></i> Nova Matéria</h3><button class="close-modal" onclick="closeEditor()"><i class="fas fa-times"></i> Fechar</button></div>
+    <div class="modal-header"><h3 id="editorTitle">Nova Matéria</h3><button class="close-modal" onclick="closeEditor()">Fechar</button></div>
 
-    <label>Título</label><input type="text" id="editTitle" placeholder="Digite o título da matéria">
+    <label>Título</label><input type="text" id="editTitle">
     <label>Categoria</label><select id="editCategory"></select>
-    <label>URL da Imagem (opcional)</label><input type="text" id="editImage" placeholder="https://exemplo.com/imagem.jpg">
+    <label>Tags (separadas por vírgula)</label><input type="text" id="editTags" placeholder="Ex: tecnologia, inovação, apple">
+    
+    <label>Imagem da Capa (Upload pro Google Drive)</label>
+    <div class="upload-group">
+      <input type="text" id="editImage" placeholder="URL da imagem (ou faça upload ao lado)">
+      <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleImageUpload(event)">
+      <button type="button" class="btn-upload" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> Upload</button>
+    </div>
 
     <label>Conteúdo</label>
-    <div class="editor-toolbar">
-      <button onclick="formatText('bold')"><b>N</b></button><button onclick="formatText('italic')"><i>I</i></button><button onclick="formatText('underline')"><u>S</u></button>
-      <button onclick="formatText('justifyLeft')"><i class="fas fa-align-left"></i></button><button onclick="formatText('justifyCenter')"><i class="fas fa-align-center"></i></button><button onclick="formatText('justifyRight')"><i class="fas fa-align-right"></i></button>
-      <button onclick="formatText('insertUnorderedList')"><i class="fas fa-list-ul"></i></button><button onclick="formatText('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
-      <input type="color" onchange="formatText('foreColor', this.value)" value="#1e2a3a" style="width:30px; height:28px; border:none; cursor:pointer; border-radius:4px;">
-    </div>
-    <div class="editor-content" id="editContent" contenteditable="true"><p>Digite o conteúdo da sua matéria aqui...</p></div>
+    <!-- Substituído pelo QUILL.JS -->
+    <div id="editor-container"></div>
 
     <div class="editor-actions">
       <button class="btn-publish" onclick="saveMateria('published')"><i class="fas fa-check-circle"></i> Publicar</button>
+      <button class="btn-preview" onclick="previewMateria()"><i class="fas fa-eye"></i> Preview</button>
       <button class="btn-draft" onclick="saveMateria('draft')"><i class="fas fa-save"></i> Salvar Rascunho</button>
       <button class="btn-cancel" onclick="closeEditor()"><i class="fas fa-times"></i> Cancelar</button>
     </div>
@@ -306,354 +215,174 @@
 <script src="data/database.js"></script>
 <script>
   let editingMateriaId = null;
+  let quill; // Instância do Editor
 
-  // ==========================================
-  // AUTENTICAÇÃO
-  // ==========================================
-  function performLogin(e) {
+  async function performLogin(e) {
     e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = 'Autenticando...';
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value.trim();
-    const users = window.DB.getUsers();
-
-    if (users[u] && users[u].password === p) {
-      sessionStorage.setItem('newsportal_user', u);
-      window.DB.currentUser = u;
+    
+    const res = await window.DB.login(u, p);
+    if (res.success) {
+      sessionStorage.setItem('newsportal_user', res.user.username);
+      window.DB.currentUser = res.user.name;
       document.getElementById('loginOverlay').style.display = 'none';
-      
-      updateDashboard(); loadSettings(); renderCategories(); renderMateriasAdmin(); renderUsers(); renderHistory();
+      initAdminPanel();
     } else {
-      alert('❌ Usuário ou senha incorretos!');
+      alert('❌ ' + (res.error || 'Erro ao logar'));
     }
+    btn.textContent = 'Entrar';
   }
 
   function logout() {
-    if (confirm('Deseja sair do painel administrativo?')) {
+    if (confirm('Deseja sair?')) {
       sessionStorage.removeItem('newsportal_user');
-      window.location.href = 'index.html';
+      window.location.reload();
     }
   }
 
-  // ==========================================
-  // LÓGICA DO PAINEL
-  // ==========================================
-  function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    return date.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  function initAdminPanel() {
+    // Inicializar Quill.js
+    quill = new Quill('#editor-container', {
+      theme: 'snow',
+      modules: { toolbar: [ [{ 'header': [2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ 'color': [] }, { 'background': [] }], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link', 'image', 'video'], ['clean'] ] }
+    });
+    updateDashboard(); loadSettings(); renderCategories(); renderMateriasAdmin(); renderHistory();
   }
+
+  async function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    const btn = document.querySelector('.btn-upload');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    try {
+      const res = await window.DB.uploadImage(file);
+      if(res.success) document.getElementById('editImage').value = res.url;
+      else alert('Erro ao subir imagem');
+    } catch(err) { alert('Erro na conexão'); }
+    btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+  }
+
+  function formatDate(dateStr) { return new Date(dateStr).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); }
 
   function switchTab(tab) {
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active'));
-    
     document.getElementById(`panel-${tab}`).classList.add('active');
     document.querySelector(`.admin-tabs button[onclick*="${tab}"]`).classList.add('active');
-    
-    if (tab === 'dashboard') updateDashboard();
-    if (tab === 'settings') loadSettings();
-    if (tab === 'categories') renderCategories();
-    if (tab === 'materias') renderMateriasAdmin();
-    if (tab === 'users') renderUsers();
-    if (tab === 'history') renderHistory();
+    if (tab === 'dashboard') updateDashboard(); if (tab === 'settings') loadSettings(); if (tab === 'categories') renderCategories(); if (tab === 'materias') renderMateriasAdmin(); if (tab === 'history') renderHistory();
   }
 
   function updateDashboard() {
     const materias = window.DB.getAllMaterias();
-    const published = materias.filter(m => m.status === 'published');
-    const categories = window.DB.getCategories();
-    const totalViews = materias.reduce((sum, m) => sum + (m.views || 0), 0);
-
-    document.getElementById('totalMaterias').textContent = published.length;
-    document.getElementById('totalCategories').textContent = categories.length;
-    document.getElementById('totalViews').textContent = totalViews.toLocaleString();
-
-    const lastList = document.getElementById('lastMaterias');
-    lastList.innerHTML = published.slice(0, 5).map(m => `
-      <div class="materia-item">
-        <div class="materia-thumb">
-          ${m.image ? `<img src="${m.image}" alt="Capa">` : `<i class="fas fa-image"></i>`}
-        </div>
-        <div class="materia-info">
-          <h4>${m.title}</h4>
-          <div class="materia-meta">
-            <span class="status-published">Publicado</span>
-            ${m.category} · ${formatDate(m.date)} · ${m.views || 0} views
-          </div>
-        </div>
-        <div class="materia-actions">
-          <button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i> Editar</button>
-        </div>
-      </div>
+    document.getElementById('totalMaterias').textContent = materias.filter(m => m.status === 'published').length;
+    document.getElementById('totalCategories').textContent = window.DB.getCategories().length;
+    document.getElementById('totalViews').textContent = materias.reduce((s, m) => s + (m.views||0), 0);
+    document.getElementById('lastMaterias').innerHTML = materias.slice(0,5).map(m => `
+      <div class="materia-item"><div class="materia-thumb">${m.image ? `<img src="${m.image}">` : '<i class="fas fa-image"></i>'}</div>
+      <div class="materia-info"><h4>${m.title}</h4><div class="materia-meta">${m.status==='published'?'Publicado':'Rascunho'} · ${formatDate(m.date)}</div></div></div>
     `).join('');
   }
 
   function renderMateriasAdmin() {
-    const list = document.getElementById('materiasListAdmin');
-    const materias = window.DB.getAllMaterias();
-    
-    list.innerHTML = materias.map(m => `
-      <div class="materia-item">
-        <div class="materia-thumb">
-          ${m.image ? `<img src="${m.image}" alt="Capa">` : `<i class="fas fa-image"></i>`}
-        </div>
-        <div class="materia-info">
-          <h4>${m.title}</h4>
-          <div class="materia-meta">
-            <span class="${m.status === 'published' ? 'status-published' : 'status-draft'}">${m.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
-            ${m.category} · Autor: ${m.author || 'admin'} · ${formatDate(m.date)} · ${m.views || 0} views
-          </div>
-        </div>
-        <div class="materia-actions">
-          <button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i> Editar</button>
-          <button class="btn-delete" onclick="deleteMateria(${m.id})"><i class="fas fa-trash"></i></button>
-        </div>
-      </div>
+    document.getElementById('materiasListAdmin').innerHTML = window.DB.getAllMaterias().map(m => `
+      <div class="materia-item"><div class="materia-thumb">${m.image ? `<img src="${m.image}">` : '<i class="fas fa-image"></i>'}</div>
+      <div class="materia-info"><h4>${m.title}</h4><div class="materia-meta"><span class="${m.status==='published'?'status-published':'status-draft'}">${m.status==='published'?'Publicado':'Rascunho'}</span> ${m.category} · Autor: ${m.author} · ${formatDate(m.date)}</div></div>
+      <div class="materia-actions"><button class="btn-edit" onclick="editMateria(${m.id})"><i class="fas fa-edit"></i></button><button class="btn-delete" onclick="deleteMateria(${m.id})"><i class="fas fa-trash"></i></button></div></div>
     `).join('');
   }
 
   function loadSettings() {
-    const settings = window.DB.getSettings();
-    document.getElementById('primaryColor').value = settings.primaryColor;
-    document.getElementById('primaryColorText').value = settings.primaryColor;
-    document.getElementById('secondaryColor').value = settings.secondaryColor;
-    document.getElementById('secondaryColorText').value = settings.secondaryColor;
-    document.getElementById('backgroundColor').value = settings.backgroundColor;
-    document.getElementById('backgroundColorText').value = settings.backgroundColor;
-    document.getElementById('textColor').value = settings.textColor;
-    document.getElementById('textColorText').value = settings.textColor;
-    document.getElementById('fontFamily').value = settings.fontFamily;
-    document.getElementById('headingFont').value = settings.headingFont;
-    document.getElementById('logoText').value = settings.logoText;
-    document.getElementById('logoSubtext').value = settings.logoSubtext;
-    document.getElementById('logoIcon').value = settings.logoIcon;
-    document.getElementById('containerMaxWidth').value = settings.containerMaxWidth;
-    document.getElementById('borderRadius').value = settings.borderRadius;
-    updatePreview();
+    const s = window.DB.getSettings();
+    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon'].forEach(id => {
+      if(document.getElementById(id)) document.getElementById(id).value = s[id] || '';
+    });
   }
-
-  function updatePreview() {
-    const primary = document.getElementById('primaryColor').value;
-    const secondary = document.getElementById('secondaryColor').value;
-    const logoText = document.getElementById('logoText').value;
-    const logoSubtext = document.getElementById('logoSubtext').value;
-    const logoIcon = document.getElementById('logoIcon').value;
-    document.getElementById('previewIcon').innerHTML = `<i class="fas ${logoIcon}"></i>`;
-    document.getElementById('previewLogo').innerHTML = `${logoText} <small style="font-weight:400; font-size:0.7rem; color:#6b7a8f;">${logoSubtext}</small>`;
-    document.getElementById('previewButton').style.background = primary;
-    document.getElementById('previewButton2').style.background = secondary;
-  }
-
-  document.querySelectorAll('input[type="color"]').forEach(input => {
-    input.addEventListener('input', function() { document.getElementById(this.id + 'Text').value = this.value; updatePreview(); });
-  });
-
-  document.querySelectorAll('.color-input-group input[type="text"]').forEach(input => {
-    input.addEventListener('input', function() { document.getElementById(this.id.replace('Text', '')).value = this.value; updatePreview(); });
-  });
-
-  document.getElementById('logoText').addEventListener('input', updatePreview);
-  document.getElementById('logoSubtext').addEventListener('input', updatePreview);
-  document.getElementById('logoIcon').addEventListener('input', updatePreview);
 
   document.getElementById('settingsForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const settings = {
-      primaryColor: document.getElementById('primaryColor').value,
-      secondaryColor: document.getElementById('secondaryColor').value,
-      backgroundColor: document.getElementById('backgroundColor').value,
-      textColor: document.getElementById('textColor').value,
-      fontFamily: document.getElementById('fontFamily').value,
-      headingFont: document.getElementById('headingFont').value,
-      logoText: document.getElementById('logoText').value,
-      logoSubtext: document.getElementById('logoSubtext').value,
-      logoIcon: document.getElementById('logoIcon').value,
-      containerMaxWidth: document.getElementById('containerMaxWidth').value,
-      borderRadius: document.getElementById('borderRadius').value
-    };
-    window.DB.updateSettings(settings);
-    alert('✅ Configurações salvas com sucesso!');
-    if (confirm('Deseja visualizar o site com as novas configurações?')) { window.location.href = 'index.html'; }
+    const s = {};
+    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon'].forEach(id => s[id] = document.getElementById(id).value);
+    window.DB.updateSettings(s); alert('Configurações salvas!');
   });
 
   function renderCategories() {
-    const tbody = document.getElementById('categoriesBody');
-    const categories = window.DB.getAllCategories();
-    tbody.innerHTML = categories.map(cat => `
-      <tr data-id="${cat.id}" draggable="true">
-        <td><span class="drag-handle"><i class="fas fa-grip-vertical"></i></span></td>
-        <td><input type="text" value="${cat.name}" class="edit-cat-name" data-id="${cat.id}" style="border:1px solid transparent; background:transparent; padding:4px 6px; border-radius:4px; width:100%; font-weight:600;" onfocus="this.style.borderColor='#3498db'; this.style.background='white';" onblur="updateCategoryName(${cat.id}, this.value)"></td>
-        <td>/${cat.slug}.html</td>
-        <td><i class="fas ${cat.icon}"></i> ${cat.icon}</td>
-        <td><span class="status-badge ${cat.active ? 'active' : 'inactive'}">${cat.active ? 'Ativo' : 'Inativo'}</span></td>
-        <td style="text-align:right;">
-          <button class="btn-icon" onclick="toggleCategoryStatus(${cat.id})" title="${cat.active ? 'Desativar' : 'Ativar'}"><i class="fas ${cat.active ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
-          <button class="btn-icon btn-danger" onclick="deleteCategory(${cat.id})" title="Excluir"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
+    document.getElementById('categoriesBody').innerHTML = window.DB.getAllCategories().map(cat => `
+      <tr data-id="${cat.id}"><td>${cat.name}</td><td>/${cat.slug}.html</td><td><i class="fas ${cat.icon}"></i></td>
+      <td><span class="status-badge ${cat.active ? 'active' : 'inactive'}">${cat.active ? 'Ativo' : 'Inativo'}</span></td>
+      <td style="text-align:right;"><button class="btn-icon btn-danger" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button></td></tr>
     `).join('');
-    setupDragAndDrop();
   }
 
-  function setupDragAndDrop() {
-    const rows = document.querySelectorAll('#categoriesBody tr');
-    let dragItem = null;
-    rows.forEach(row => {
-      row.addEventListener('dragstart', (e) => { dragItem = row; row.style.opacity = '0.5'; e.dataTransfer.effectAllowed = 'move'; });
-      row.addEventListener('dragend', () => { row.style.opacity = '1'; });
-      row.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const target = e.currentTarget;
-        if (target !== dragItem) {
-          const parent = target.parentNode;
-          const allRows = Array.from(parent.children);
-          if (allRows.indexOf(dragItem) < allRows.indexOf(target)) parent.insertBefore(dragItem, target.nextSibling);
-          else parent.insertBefore(dragItem, target);
-        }
-      });
-    });
-    document.addEventListener('dragend', () => {
-      const orderedIds = Array.from(document.querySelectorAll('#categoriesBody tr')).map(row => parseInt(row.dataset.id));
-      window.DB.reorderCategories(orderedIds);
-      renderCategories();
-    });
-  }
-
-  function updateCategoryName(id, newName) {
-    if (newName.trim()) { window.DB.editCategory(id, { name: newName.trim() }); renderCategories(); }
-  }
-
-  function toggleCategoryStatus(id) {
-    const cat = window.DB.cache.categories.find(c => c.id === id);
-    if (cat) { window.DB.editCategory(id, { active: !cat.active }); renderCategories(); }
-  }
-
-  function deleteCategory(id) {
-    if (confirm('Tem certeza que deseja desativar esta categoria?')) { window.DB.deleteCategory(id); renderCategories(); }
-  }
-
+  function deleteCategory(id) { if (confirm('Desativar categoria?')) { window.DB.deleteCategory(id); renderCategories(); } }
   document.getElementById('categoryForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('catName').value.trim();
-    const icon = document.getElementById('catIcon').value.trim() || 'fa-tag';
-    if (name) { window.DB.addCategory(name, icon); document.getElementById('catName').value = ''; document.getElementById('catIcon').value = 'fa-tag'; renderCategories(); }
+    e.preventDefault(); window.DB.addCategory(document.getElementById('catName').value, document.getElementById('catIcon').value);
+    document.getElementById('catName').value = ''; renderCategories();
   });
 
   function editMateria(id) {
     const materia = window.DB.getMateriaById(id);
-    if (!materia) { alert('❌ Matéria não encontrada!'); return; }
     editingMateriaId = id;
-    document.getElementById('editorTitle').textContent = `✎ Editando: ${materia.title}`;
+    document.getElementById('editorTitle').textContent = `Editando: ${materia.title}`;
     document.getElementById('editTitle').value = materia.title;
     document.getElementById('editImage').value = materia.image || '';
-    document.getElementById('editContent').innerHTML = materia.content;
+    document.getElementById('editTags').value = materia.tags || '';
+    document.getElementById('editCategory').innerHTML = window.DB.getCategories().map(c => `<option value="${c.name}" ${c.name === materia.category ? 'selected' : ''}>${c.name}</option>`).join('');
+    quill.root.innerHTML = materia.content;
     document.getElementById('editorModal').classList.add('visible');
-    populateCategorySelect(materia.category);
   }
 
   function openEditor() {
     editingMateriaId = null;
-    document.getElementById('editorTitle').textContent = '✏️ Nova Matéria';
+    document.getElementById('editorTitle').textContent = 'Nova Matéria';
     document.getElementById('editTitle').value = '';
     document.getElementById('editImage').value = '';
-    document.getElementById('editContent').innerHTML = '<p>Digite o conteúdo aqui...</p>';
+    document.getElementById('editTags').value = '';
+    quill.root.innerHTML = '';
+    document.getElementById('editCategory').innerHTML = window.DB.getCategories().map(c => `<option value="${c.name}">${c.name}</option>`).join('');
     document.getElementById('editorModal').classList.add('visible');
-    populateCategorySelect();
   }
 
-  function closeEditor() {
-    document.getElementById('editorModal').classList.remove('visible');
-    editingMateriaId = null;
-  }
+  function closeEditor() { document.getElementById('editorModal').classList.remove('visible'); }
 
-  function populateCategorySelect(selected = null) {
-    const select = document.getElementById('editCategory');
-    select.innerHTML = window.DB.getCategories().map(c => `<option value="${c.name}" ${c.name === selected ? 'selected' : ''}>${c.name}</option>`).join('');
-  }
-
-  function formatText(command, value = null) {
-    const content = document.getElementById('editContent');
-    content.focus();
-    if (command === 'foreColor') document.execCommand('foreColor', false, value);
-    else document.execCommand(command, false, null);
+  function previewMateria() {
+    const previewData = {
+      title: document.getElementById('editTitle').value,
+      category: document.getElementById('editCategory').value,
+      image: document.getElementById('editImage').value,
+      tags: document.getElementById('editTags').value,
+      content: quill.root.innerHTML,
+      author: window.DB.currentUser,
+      date: new Date().toISOString()
+    };
+    sessionStorage.setItem('preview_materia', JSON.stringify(previewData));
+    window.open('noticia.html?preview=true', '_blank');
   }
 
   function saveMateria(status) {
     const title = document.getElementById('editTitle').value.trim();
-    const category = document.getElementById('editCategory').value;
-    const image = document.getElementById('editImage').value.trim();
-    const content = document.getElementById('editContent').innerHTML;
-
-    if (!title) { alert('⚠️ O título é obrigatório.'); return; }
-    
-    // Agora capturamos também o nome do autor pela variável currentUser
-    const data = { title, category, image, content, status, author: window.DB.currentUser };
-
-    if (editingMateriaId) { window.DB.editMateria(editingMateriaId, data); alert('✅ Matéria atualizada com sucesso!'); } 
-    else { window.DB.addMateria(data); alert('✅ Matéria criada com sucesso!'); }
-
-    closeEditor();
-    renderMateriasAdmin();
-    updateDashboard();
+    if (!title) return alert('Título obrigatório');
+    const data = { title, category: document.getElementById('editCategory').value, image: document.getElementById('editImage').value, tags: document.getElementById('editTags').value, content: quill.root.innerHTML, status };
+    if (editingMateriaId) window.DB.editMateria(editingMateriaId, data); else window.DB.addMateria(data);
+    closeEditor(); renderMateriasAdmin(); updateDashboard();
   }
 
-  function deleteMateria(id) {
-    if (confirm('Tem certeza que deseja excluir esta matéria?')) { window.DB.deleteMateria(id); renderMateriasAdmin(); updateDashboard(); }
-  }
+  function deleteMateria(id) { if (confirm('Excluir?')) { window.DB.deleteMateria(id); renderMateriasAdmin(); updateDashboard(); } }
+  function renderHistory() { document.getElementById('historyListAdmin').innerHTML = window.DB.getHistory().map(i => `<div class="history-item"><span><strong>${i.user}</strong>: ${i.message}</span><span>${formatDate(i.time)}</span></div>`).join(''); }
 
-  function renderUsers() {
-    const list = document.getElementById('usersList');
-    list.innerHTML = Object.entries(window.DB.getUsers()).map(([username, data]) => `
-      <div class="user-item">
-        <div><strong>${username}</strong> (${data.name}) <span class="user-role">${data.level}</span></div>
-        <div><button class="btn-delete-user" onclick="deleteUser('${username}')"><i class="fas fa-trash"></i> Remover</button></div>
-      </div>
-    `).join('');
-  }
-
-  document.getElementById('userForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = document.getElementById('newUsername').value.trim();
-    const password = document.getElementById('newPassword').value.trim();
-    const level = document.getElementById('newUserLevel').value;
-    if (!username || !password) { alert('Preencha todos os campos.'); return; }
-    if (!window.DB.addUser(username, password, level)) { alert('Usuário já existe!'); return; }
-    renderUsers();
-    document.getElementById('userForm').reset();
-    alert('✅ Usuário criado com sucesso!');
-  });
-
-  function deleteUser(username) {
-    if (username === 'admin') { alert('Não é possível remover o usuário admin.'); return; }
-    if (confirm(`Remover usuário "${username}"?`)) { window.DB.deleteUser(username); renderUsers(); }
-  }
-
-  function renderHistory() {
-    document.getElementById('historyListAdmin').innerHTML = window.DB.getHistory().slice(0, 30).map(item => `
-      <div class="history-item"><span><strong>${item.user}</strong> ${item.message}</span><span class="h-time">${formatDate(item.time)}</span></div>
-    `).join('');
-  }
-
-  // ==========================================
-  // INICIALIZAÇÃO
-  // ==========================================
   document.addEventListener('DOMContentLoaded', async function() {
-    if (typeof Database === 'undefined') {
-      alert('❌ Banco de dados não encontrado!');
-      return;
-    }
-    window.DB = await Database.init();
+    if (typeof localforage === 'undefined') { alert('Carregando bibliotecas...'); return; }
+    await window.Database.init();
     
-    // Lógica de Autenticação na abertura
     const loggedUser = sessionStorage.getItem('newsportal_user');
-    
-    if (loggedUser && window.DB.getUsers()[loggedUser]) {
-      // Usuário já está logado
+    // Verifica cache/offline login (se o DB.users tá vazio pq o backend falhou, mas já logou antes)
+    if (loggedUser) {
       window.DB.currentUser = loggedUser;
       document.getElementById('loginOverlay').style.display = 'none';
-      
-      updateDashboard(); loadSettings(); renderCategories(); renderMateriasAdmin(); renderUsers(); renderHistory();
+      initAdminPanel();
     } else {
-      // Se não estiver logado, garante que a tela de login fique visível
       document.getElementById('loginOverlay').style.display = 'flex';
     }
   });
