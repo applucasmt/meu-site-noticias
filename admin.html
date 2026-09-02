@@ -111,6 +111,7 @@
     .modal-box label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; color: #2c3e50; margin-top: 1rem; }
     .modal-box input[type="text"], .modal-box select { width: 100%; padding: 0.7rem 1rem; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 0.95rem; }
     
+    /* QUILL EDITOR OVERRIDES */
     #editor-container { height: 300px; font-family: inherit; font-size: 1rem; border-radius: 0 0 8px 8px; border: 2px solid #e0e6ed; border-top: none; }
     .ql-toolbar.ql-snow { border: 2px solid #e0e6ed; border-radius: 8px 8px 0 0; background: #f8f9fa; }
     
@@ -305,7 +306,7 @@
 
   function loadSettings() {
     const s = window.DB.getSettings();
-    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon', 'containerMaxWidth', 'borderRadius'].forEach(id => {
+    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon'].forEach(id => {
       if(document.getElementById(id)) document.getElementById(id).value = s[id] || '';
     });
     ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor'].forEach(id => {
@@ -402,11 +403,10 @@
   }
 
   // ==========================================
-  // INICIALIZAÇÃO SEGURA (Evita travamentos e erros de "null")
+  // INICIALIZAÇÃO E EVENTOS DE FORMULÁRIO SEGUROS
   // ==========================================
   document.addEventListener('DOMContentLoaded', async function() {
     
-    // ANEXAR EVENTOS AOS FORMULÁRIOS COM SEGURANÇA
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
       loginForm.addEventListener('submit', async function(e) {
@@ -420,22 +420,35 @@
         const p = document.getElementById('loginPass').value.trim();
         
         try {
-          if (typeof window.DB.login !== 'function') {
-            alert("❌ O database.js antigo está no site! Copie o database.js da minha resposta anterior para habilitar o login.");
-            return;
-          }
+          if (typeof window.DB === 'undefined' || !window.DB) throw new Error("DB não inicializado");
 
-          const res = await window.DB.login(u, p);
-          if (res && res.success && res.user) {
-            sessionStorage.setItem('newsportal_user', res.user.username);
-            window.DB.currentUser = res.user.name;
-            document.getElementById('loginOverlay').style.display = 'none';
-            initAdminPanel();
-          } else {
-            alert('❌ Usuário ou senha incorretos!');
+          // Tenta Login Seguro (Backend)
+          if (typeof window.DB.login === 'function') {
+            const res = await window.DB.login(u, p);
+            if (res && res.success && res.user) {
+              sessionStorage.setItem('newsportal_user', res.user.username);
+              window.DB.currentUser = res.user.name;
+              document.getElementById('loginOverlay').style.display = 'none';
+              initAdminPanel();
+            } else {
+              alert('❌ Usuário ou senha incorretos!');
+            }
+          } 
+          // Fallback Híbrido (Para nunca travar se o Backend não tiver o login)
+          else {
+            const users = window.DB.getUsers();
+            if (users && users[u] && users[u].password === p) {
+              sessionStorage.setItem('newsportal_user', u);
+              window.DB.currentUser = users[u].name || u;
+              document.getElementById('loginOverlay').style.display = 'none';
+              initAdminPanel();
+            } else {
+              alert('❌ Usuário ou senha incorretos! (Modo Local)');
+            }
           }
         } catch (err) {
-          alert('❌ Erro de conexão com o banco de dados. Atualize o Apps Script.');
+          console.error(err);
+          alert('❌ Erro de conexão com o banco de dados. Atualize a página e tente novamente.');
         } finally {
           submitBtn.textContent = originalText;
           submitBtn.disabled = false;
@@ -474,23 +487,20 @@
         const password = document.getElementById('newPassword').value.trim();
         const level = document.getElementById('newUserLevel').value;
         if (!username || !password) return alert('Preencha todos os campos.');
-        if (typeof window.DB.addUser !== 'function') return alert('Atualize o database.js.');
+        if (typeof window.DB.addUser !== 'function') return alert('Função não suportada no cache local.');
         if (!window.DB.addUser(username, password, level, username)) return alert('Usuário já existe!');
         renderUsers(); document.getElementById('userForm').reset(); alert('✅ Usuário criado com sucesso!');
       });
     }
 
-    // CARREGANDO O BANCO DE DADOS
-    if (typeof localforage === 'undefined') {
-      alert("Aviso: Falha de rede. O sistema tentará carregar sem o cache otimizado.");
-    }
-    
+    // CARREGANDO O BANCO DE DADOS AQUI (A correção principal do undefined)
     try {
-      await window.Database.init();
+      if (typeof window.Database === 'undefined') throw new Error("database.js não carregou");
       
+      window.DB = await window.Database.init();
       const loggedUser = sessionStorage.getItem('newsportal_user');
       
-      if (loggedUser && typeof window.DB.getUsers === 'function' && window.DB.getUsers()[loggedUser]) {
+      if (loggedUser && window.DB && typeof window.DB.getUsers === 'function' && window.DB.getUsers()[loggedUser]) {
         window.DB.currentUser = loggedUser;
         document.getElementById('loginOverlay').style.display = 'none';
         initAdminPanel();
