@@ -122,7 +122,12 @@
     .upload-group { display: flex; gap: 0.5rem; }
     .btn-upload { background: #3498db; color: white; border: none; padding: 0 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; }
     
-    @media (max-width: 640px) { .admin-header { flex-direction: column; align-items: stretch; } .admin-form { flex-direction: column; } .modal-box { padding: 1rem; } }
+    @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+      .admin-container { padding: 1rem; } .admin-header { flex-direction: column; align-items: stretch; }
+      .admin-form { flex-direction: column; } .admin-form .form-group { min-width: 100%; }
+      .admin-table { font-size: 0.8rem; } .admin-table th, .admin-table td { padding: 0.5rem; } .modal-box { padding: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -190,7 +195,27 @@
   <div class="admin-panel" id="panel-categories">
     <form class="admin-form" id="categoryForm">
       <div class="form-group"><label>Nome da Categoria</label><input type="text" id="catName" required></div>
-      <div class="form-group"><label>Ícone (Font Awesome)</label><input type="text" id="catIcon" value="fa-tag"></div>
+      <div class="form-group">
+        <label>Ícone (Selecione)</label>
+        <select id="catIcon">
+          <option value="fa-tag">🏷️ Tag (Padrão)</option>
+          <option value="fa-gavel">⚖️ Política / Leis</option>
+          <option value="fa-chart-line">📈 Economia / Finanças</option>
+          <option value="fa-microchip">💻 Tecnologia</option>
+          <option value="fa-heartbeat">⚕️ Saúde</option>
+          <option value="fa-film">🎬 Cultura / Entretenimento</option>
+          <option value="fa-futbol">⚽ Esportes</option>
+          <option value="fa-globe-americas">🌎 Internacional</option>
+          <option value="fa-graduation-cap">🎓 Educação</option>
+          <option value="fa-leaf">🍃 Meio Ambiente</option>
+          <option value="fa-car">🚗 Veículos</option>
+          <option value="fa-gamepad">🎮 Games</option>
+          <option value="fa-music">🎵 Música</option>
+          <option value="fa-utensils">🍽️ Gastronomia</option>
+          <option value="fa-plane">✈️ Viagens / Turismo</option>
+          <option value="fa-city">🏙️ Cidades / Local</option>
+        </select>
+      </div>
       <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
     </form>
     <table class="admin-table" id="categoriesTable">
@@ -306,7 +331,7 @@
 
   function loadSettings() {
     const s = window.DB.getSettings();
-    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon'].forEach(id => {
+    ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor', 'fontFamily', 'headingFont', 'logoText', 'logoSubtext', 'logoIcon', 'containerMaxWidth', 'borderRadius'].forEach(id => {
       if(document.getElementById(id)) document.getElementById(id).value = s[id] || '';
     });
     ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor'].forEach(id => {
@@ -403,10 +428,11 @@
   }
 
   // ==========================================
-  // INICIALIZAÇÃO E EVENTOS DE FORMULÁRIO SEGUROS
+  // INICIALIZAÇÃO SEGURA E EVENTOS
   // ==========================================
   document.addEventListener('DOMContentLoaded', async function() {
     
+    // Login Seguro
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
       loginForm.addEventListener('submit', async function(e) {
@@ -422,7 +448,7 @@
         try {
           if (typeof window.DB === 'undefined' || !window.DB) throw new Error("DB não inicializado");
 
-          // Tenta Login Seguro (Backend)
+          // Tenta Login Seguro pelo Google Sheets
           if (typeof window.DB.login === 'function') {
             const res = await window.DB.login(u, p);
             if (res && res.success && res.user) {
@@ -434,7 +460,7 @@
               alert('❌ Usuário ou senha incorretos!');
             }
           } 
-          // Fallback Híbrido (Para nunca travar se o Backend não tiver o login)
+          // Se falhar (offline ou código do apps script antigo), tenta localmente
           else {
             const users = window.DB.getUsers();
             if (users && users[u] && users[u].password === p) {
@@ -448,7 +474,7 @@
           }
         } catch (err) {
           console.error(err);
-          alert('❌ Erro de conexão com o banco de dados. Atualize a página e tente novamente.');
+          alert('❌ Erro de conexão com o banco de dados. Verifique a URL do App Script no database.js.');
         } finally {
           submitBtn.textContent = originalText;
           submitBtn.disabled = false;
@@ -493,7 +519,11 @@
       });
     }
 
-    // CARREGANDO O BANCO DE DADOS AQUI (A correção principal do undefined)
+    // Inicialização principal
+    if (typeof localforage === 'undefined') {
+      alert("Aviso: Falha de rede. O sistema tentará carregar sem o cache otimizado.");
+    }
+    
     try {
       if (typeof window.Database === 'undefined') throw new Error("database.js não carregou");
       
