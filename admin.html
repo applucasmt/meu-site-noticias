@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     /* ============================================================
-       ADMIN - ESTILOS
+       ADMIN - ESTILOS GERAIS
     ============================================================ */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1e2a3a; padding: 1rem; }
@@ -24,6 +24,32 @@
     .admin-tabs button:hover { background: #f0f3f8; }
     .admin-tabs button.active { background: #3498db; color: white; }
     .admin-panel { display: none; } .admin-panel.active { display: block; }
+    
+    /* LOGIN OVERLAY */
+    #loginOverlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: #f0f2f5; z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-box {
+      background: white; padding: 2.5rem; border-radius: 1.5rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px;
+      text-align: center;
+    }
+    .login-box h2 { font-size: 1.8rem; margin-bottom: 0.5rem; color: #1e2a3a; }
+    .login-box p { color: #6b7a8f; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .login-box input {
+      width: 100%; padding: 0.8rem 1rem; margin-bottom: 1rem;
+      border: 2px solid #e0e6ed; border-radius: 8px; font-size: 1rem; transition: 0.2s;
+    }
+    .login-box input:focus { border-color: #3498db; outline: none; }
+    .login-box button {
+      width: 100%; padding: 0.8rem; background: #d32f2f; color: white;
+      border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600;
+      cursor: pointer; transition: 0.2s;
+    }
+    .login-box button:hover { background: #b71c1c; }
+
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
     .stat-card { background: #f8f9fa; padding: 1.2rem; border-radius: 0.8rem; text-align: center; }
     .stat-card .number { font-size: 2rem; font-weight: 700; color: #d32f2f; }
@@ -46,38 +72,11 @@
     .status-badge.active { background: #d4edda; color: #155724; }
     .status-badge.inactive { background: #f8d7da; color: #721c24; }
 
-    /* ====== CSS DAS MATÉRIAS COM IMAGEM ====== */
-    .materia-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.8rem;
-      border-bottom: 1px solid #eef2f7;
-      flex-wrap: wrap;
-      gap: 1rem; 
-    }
-    .materia-item .materia-thumb {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      background: #eef2f7;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #bcc9db;
-      font-size: 1.5rem;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .materia-item .materia-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .materia-item .materia-info {
-      flex: 1;
-      min-width: 200px;
-    }
+    /* ====== CSS DAS MATÉRIAS ====== */
+    .materia-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; border-bottom: 1px solid #eef2f7; flex-wrap: wrap; gap: 1rem; }
+    .materia-item .materia-thumb { width: 60px; height: 60px; border-radius: 8px; background: #eef2f7; display: flex; align-items: center; justify-content: center; color: #bcc9db; font-size: 1.5rem; flex-shrink: 0; overflow: hidden; }
+    .materia-item .materia-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .materia-item .materia-info { flex: 1; min-width: 200px; }
     .materia-item .materia-info h4 { font-size: 1rem; margin-bottom: 0.2rem; }
     .materia-item .materia-info .materia-meta { font-size: 0.8rem; color: #6b7a8f; }
     .materia-item .materia-actions { display: flex; gap: 0.3rem; }
@@ -139,8 +138,20 @@
 </head>
 <body>
 
-<div class="admin-container">
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay">
+  <form class="login-box" onsubmit="performLogin(event)">
+    <i class="fas fa-user-circle" style="font-size: 3.5rem; color: #d32f2f; margin-bottom: 1rem;"></i>
+    <h2>Acesso Restrito</h2>
+    <p>Insira suas credenciais para acessar o painel</p>
+    <input type="text" id="loginUser" placeholder="Usuário" required>
+    <input type="password" id="loginPass" placeholder="Senha" required>
+    <button type="submit">Entrar</button>
+    <a href="index.html" style="display: block; margin-top: 1.5rem; color: #6b7a8f; font-size: 0.9rem;"><i class="fas fa-arrow-left"></i> Voltar ao site</a>
+  </form>
+</div>
 
+<div class="admin-container">
   <!-- HEADER -->
   <div class="admin-header">
     <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
@@ -188,104 +199,23 @@
 
     <form id="settingsForm" class="settings-grid">
       <div class="full-width"><h4><i class="fas fa-paint-bucket"></i> Cores</h4></div>
-
-      <div class="form-group">
-        <label>Cor Primária</label>
-        <div class="color-input-group">
-          <input type="color" id="primaryColor" value="#d32f2f">
-          <input type="text" id="primaryColorText" value="#d32f2f">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Cor Secundária</label>
-        <div class="color-input-group">
-          <input type="color" id="secondaryColor" value="#1e2a3a">
-          <input type="text" id="secondaryColorText" value="#1e2a3a">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Cor de Fundo</label>
-        <div class="color-input-group">
-          <input type="color" id="backgroundColor" value="#f4f6f9">
-          <input type="text" id="backgroundColorText" value="#f4f6f9">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Cor do Texto</label>
-        <div class="color-input-group">
-          <input type="color" id="textColor" value="#1e2a3a">
-          <input type="text" id="textColorText" value="#1e2a3a">
-        </div>
-      </div>
+      <div class="form-group"><label>Cor Primária</label><div class="color-input-group"><input type="color" id="primaryColor" value="#d32f2f"><input type="text" id="primaryColorText" value="#d32f2f"></div></div>
+      <div class="form-group"><label>Cor Secundária</label><div class="color-input-group"><input type="color" id="secondaryColor" value="#1e2a3a"><input type="text" id="secondaryColorText" value="#1e2a3a"></div></div>
+      <div class="form-group"><label>Cor de Fundo</label><div class="color-input-group"><input type="color" id="backgroundColor" value="#f4f6f9"><input type="text" id="backgroundColorText" value="#f4f6f9"></div></div>
+      <div class="form-group"><label>Cor do Texto</label><div class="color-input-group"><input type="color" id="textColor" value="#1e2a3a"><input type="text" id="textColorText" value="#1e2a3a"></div></div>
 
       <div class="full-width"><h4><i class="fas fa-font"></i> Fontes</h4></div>
-
-      <div class="form-group">
-        <label>Fonte Principal</label>
-        <select id="fontFamily">
-          <option value="Segoe UI, Roboto, system-ui, sans-serif">Segoe UI</option>
-          <option value="Arial, Helvetica, sans-serif">Arial</option>
-          <option value="Georgia, serif">Georgia</option>
-          <option value="'Times New Roman', serif">Times New Roman</option>
-          <option value="'Courier New', monospace">Courier New</option>
-          <option value="system-ui, -apple-system, sans-serif">System UI</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Fonte de Títulos</label>
-        <select id="headingFont">
-          <option value="Segoe UI, Roboto, system-ui, sans-serif">Segoe UI</option>
-          <option value="Arial, Helvetica, sans-serif">Arial</option>
-          <option value="Georgia, serif">Georgia</option>
-          <option value="'Times New Roman', serif">Times New Roman</option>
-          <option value="'Courier New', monospace">Courier New</option>
-          <option value="system-ui, -apple-system, sans-serif">System UI</option>
-        </select>
-      </div>
+      <div class="form-group"><label>Fonte Principal</label><select id="fontFamily"><option value="Segoe UI, Roboto, system-ui, sans-serif">Segoe UI</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Georgia, serif">Georgia</option><option value="'Times New Roman', serif">Times New Roman</option><option value="'Courier New', monospace">Courier New</option><option value="system-ui, -apple-system, sans-serif">System UI</option></select></div>
+      <div class="form-group"><label>Fonte de Títulos</label><select id="headingFont"><option value="Segoe UI, Roboto, system-ui, sans-serif">Segoe UI</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Georgia, serif">Georgia</option><option value="'Times New Roman', serif">Times New Roman</option><option value="'Courier New', monospace">Courier New</option><option value="system-ui, -apple-system, sans-serif">System UI</option></select></div>
 
       <div class="full-width"><h4><i class="fas fa-tag"></i> Logo</h4></div>
-
-      <div class="form-group">
-        <label>Texto do Logo</label>
-        <input type="text" id="logoText" value="NewsPortal">
-      </div>
-
-      <div class="form-group">
-        <label>Subtexto do Logo</label>
-        <input type="text" id="logoSubtext" value="· 2026">
-      </div>
-
-      <div class="form-group">
-        <label>Ícone do Logo (Font Awesome)</label>
-        <input type="text" id="logoIcon" value="fa-newspaper">
-        <small style="color:#6b7a8f; font-size:0.7rem;">Ex: fa-newspaper, fa-globe, fa-bolt</small>
-      </div>
+      <div class="form-group"><label>Texto do Logo</label><input type="text" id="logoText" value="NewsPortal"></div>
+      <div class="form-group"><label>Subtexto do Logo</label><input type="text" id="logoSubtext" value="· 2026"></div>
+      <div class="form-group"><label>Ícone do Logo (Font Awesome)</label><input type="text" id="logoIcon" value="fa-newspaper"><small style="color:#6b7a8f; font-size:0.7rem;">Ex: fa-newspaper, fa-globe, fa-bolt</small></div>
 
       <div class="full-width"><h4><i class="fas fa-layer-group"></i> Layout</h4></div>
-
-      <div class="form-group">
-        <label>Largura Máxima</label>
-        <select id="containerMaxWidth">
-          <option value="1280px">1280px (Padrão)</option>
-          <option value="1440px">1440px (Grande)</option>
-          <option value="1100px">1100px (Compacto)</option>
-          <option value="100%">100% (Fluido)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Raio das Bordas</label>
-        <select id="borderRadius">
-          <option value="1.5rem">1.5rem (Padrão)</option>
-          <option value="0.5rem">0.5rem (Pequeno)</option>
-          <option value="2rem">2rem (Grande)</option>
-          <option value="0">0 (Sem borda)</option>
-        </select>
-      </div>
+      <div class="form-group"><label>Largura Máxima</label><select id="containerMaxWidth"><option value="1280px">1280px (Padrão)</option><option value="1440px">1440px (Grande)</option><option value="1100px">1100px (Compacto)</option><option value="100%">100% (Fluido)</option></select></div>
+      <div class="form-group"><label>Raio das Bordas</label><select id="borderRadius"><option value="1.5rem">1.5rem (Padrão)</option><option value="0.5rem">0.5rem (Pequeno)</option><option value="2rem">2rem (Grande)</option><option value="0">0 (Sem borda)</option></select></div>
 
       <button type="submit" class="btn-save-settings"><i class="fas fa-save"></i> Salvar Personalização</button>
     </form>
@@ -293,14 +223,8 @@
     <div class="preview-box">
       <h4><i class="fas fa-eye"></i> Preview ao vivo</h4>
       <div class="preview-content" id="livePreview">
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <span style="font-size:1.5rem;" id="previewIcon"><i class="fas fa-newspaper"></i></span>
-          <span style="font-size:1.2rem; font-weight:700;" id="previewLogo">NewsPortal <small style="font-weight:400; font-size:0.7rem; color:#6b7a8f;">· 2026</small></span>
-        </div>
-        <div style="margin-top:0.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
-          <span style="background:#d32f2f; color:white; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem;" id="previewButton">Destaque</span>
-          <span style="background:#1e2a3a; color:white; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem;" id="previewButton2">Notícia</span>
-        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.5rem;" id="previewIcon"><i class="fas fa-newspaper"></i></span><span style="font-size:1.2rem; font-weight:700;" id="previewLogo">NewsPortal <small style="font-weight:400; font-size:0.7rem; color:#6b7a8f;">· 2026</small></span></div>
+        <div style="margin-top:0.5rem; display:flex; gap:1rem; flex-wrap:wrap;"><span style="background:#d32f2f; color:white; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem;" id="previewButton">Destaque</span><span style="background:#1e2a3a; color:white; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem;" id="previewButton2">Notícia</span></div>
       </div>
     </div>
   </div>
@@ -309,30 +233,15 @@
   <div class="admin-panel" id="panel-categories">
     <h3><i class="fas fa-plus-circle"></i> Nova Categoria</h3>
     <form class="admin-form" id="categoryForm">
-      <div class="form-group">
-        <label>Nome da Categoria</label>
-        <input type="text" id="catName" placeholder="Ex: Ciência" required>
-      </div>
-      <div class="form-group">
-        <label>Ícone (Font Awesome)</label>
-        <input type="text" id="catIcon" placeholder="fa-flask" value="fa-tag">
-      </div>
+      <div class="form-group"><label>Nome da Categoria</label><input type="text" id="catName" placeholder="Ex: Ciência" required></div>
+      <div class="form-group"><label>Ícone (Font Awesome)</label><input type="text" id="catIcon" placeholder="fa-flask" value="fa-tag"></div>
       <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
     </form>
 
     <h3 style="margin-top:2rem;"><i class="fas fa-list"></i> Categorias</h3>
     <p style="color:#6b7a8f; font-size:0.85rem;">Arraste para reordenar</p>
     <table class="admin-table" id="categoriesTable">
-      <thead>
-        <tr>
-          <th style="width:30px;">#</th>
-          <th>Nome</th>
-          <th>Slug</th>
-          <th>Ícone</th>
-          <th>Status</th>
-          <th style="text-align:right;">Ações</th>
-        </tr>
-      </thead>
+      <thead><tr><th style="width:30px;">#</th><th>Nome</th><th>Slug</th><th>Ícone</th><th>Status</th><th style="text-align:right;">Ações</th></tr></thead>
       <tbody id="categoriesBody"></tbody>
     </table>
   </div>
@@ -341,9 +250,7 @@
   <div class="admin-panel" id="panel-materias">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
       <h3><i class="fas fa-newspaper"></i> Gerenciar Matérias</h3>
-      <button onclick="openEditor()" style="background:#27ae60; color:white; border:none; padding:0.5rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;">
-        <i class="fas fa-plus"></i> Nova Matéria
-      </button>
+      <button onclick="openEditor()" style="background:#27ae60; color:white; border:none; padding:0.5rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;"><i class="fas fa-plus"></i> Nova Matéria</button>
     </div>
     <div id="materiasListAdmin"></div>
   </div>
@@ -352,22 +259,9 @@
   <div class="admin-panel" id="panel-users">
     <h3><i class="fas fa-user-plus"></i> Novo Usuário</h3>
     <form class="admin-form" id="userForm">
-      <div class="form-group">
-        <label>Usuário</label>
-        <input type="text" id="newUsername" placeholder="Nome" required>
-      </div>
-      <div class="form-group">
-        <label>Senha</label>
-        <input type="password" id="newPassword" placeholder="Senha" required>
-      </div>
-      <div class="form-group">
-        <label>Nível</label>
-        <select id="newUserLevel">
-          <option value="admin">Administrador</option>
-          <option value="editor">Editor</option>
-          <option value="journalist">Jornalista</option>
-        </select>
-      </div>
+      <div class="form-group"><label>Usuário</label><input type="text" id="newUsername" placeholder="Nome" required></div>
+      <div class="form-group"><label>Senha</label><input type="password" id="newPassword" placeholder="Senha" required></div>
+      <div class="form-group"><label>Nível</label><select id="newUserLevel"><option value="admin">Administrador</option><option value="editor">Editor</option><option value="journalist">Jornalista</option></select></div>
       <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
     </form>
 
@@ -386,35 +280,20 @@
 <!-- MODAL EDITOR -->
 <div class="modal-overlay" id="editorModal">
   <div class="modal-box">
-    <div class="modal-header">
-      <h3 id="editorTitle"><i class="fas fa-edit"></i> Nova Matéria</h3>
-      <button class="close-modal" onclick="closeEditor()"><i class="fas fa-times"></i> Fechar</button>
-    </div>
+    <div class="modal-header"><h3 id="editorTitle"><i class="fas fa-edit"></i> Nova Matéria</h3><button class="close-modal" onclick="closeEditor()"><i class="fas fa-times"></i> Fechar</button></div>
 
-    <label>Título</label>
-    <input type="text" id="editTitle" placeholder="Digite o título da matéria">
-
-    <label>Categoria</label>
-    <select id="editCategory"></select>
-
-    <label>URL da Imagem (opcional)</label>
-    <input type="text" id="editImage" placeholder="https://exemplo.com/imagem.jpg">
+    <label>Título</label><input type="text" id="editTitle" placeholder="Digite o título da matéria">
+    <label>Categoria</label><select id="editCategory"></select>
+    <label>URL da Imagem (opcional)</label><input type="text" id="editImage" placeholder="https://exemplo.com/imagem.jpg">
 
     <label>Conteúdo</label>
     <div class="editor-toolbar">
-      <button onclick="formatText('bold')"><b>N</b></button>
-      <button onclick="formatText('italic')"><i>I</i></button>
-      <button onclick="formatText('underline')"><u>S</u></button>
-      <button onclick="formatText('justifyLeft')"><i class="fas fa-align-left"></i></button>
-      <button onclick="formatText('justifyCenter')"><i class="fas fa-align-center"></i></button>
-      <button onclick="formatText('justifyRight')"><i class="fas fa-align-right"></i></button>
-      <button onclick="formatText('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
-      <button onclick="formatText('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+      <button onclick="formatText('bold')"><b>N</b></button><button onclick="formatText('italic')"><i>I</i></button><button onclick="formatText('underline')"><u>S</u></button>
+      <button onclick="formatText('justifyLeft')"><i class="fas fa-align-left"></i></button><button onclick="formatText('justifyCenter')"><i class="fas fa-align-center"></i></button><button onclick="formatText('justifyRight')"><i class="fas fa-align-right"></i></button>
+      <button onclick="formatText('insertUnorderedList')"><i class="fas fa-list-ul"></i></button><button onclick="formatText('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
       <input type="color" onchange="formatText('foreColor', this.value)" value="#1e2a3a" style="width:30px; height:28px; border:none; cursor:pointer; border-radius:4px;">
     </div>
-    <div class="editor-content" id="editContent" contenteditable="true">
-      <p>Digite o conteúdo da sua matéria aqui...</p>
-    </div>
+    <div class="editor-content" id="editContent" contenteditable="true"><p>Digite o conteúdo da sua matéria aqui...</p></div>
 
     <div class="editor-actions">
       <button class="btn-publish" onclick="saveMateria('published')"><i class="fas fa-check-circle"></i> Publicar</button>
@@ -428,6 +307,36 @@
 <script>
   let editingMateriaId = null;
 
+  // ==========================================
+  // AUTENTICAÇÃO
+  // ==========================================
+  function performLogin(e) {
+    e.preventDefault();
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    const users = window.DB.getUsers();
+
+    if (users[u] && users[u].password === p) {
+      sessionStorage.setItem('newsportal_user', u);
+      window.DB.currentUser = u;
+      document.getElementById('loginOverlay').style.display = 'none';
+      
+      updateDashboard(); loadSettings(); renderCategories(); renderMateriasAdmin(); renderUsers(); renderHistory();
+    } else {
+      alert('❌ Usuário ou senha incorretos!');
+    }
+  }
+
+  function logout() {
+    if (confirm('Deseja sair do painel administrativo?')) {
+      sessionStorage.removeItem('newsportal_user');
+      window.location.href = 'index.html';
+    }
+  }
+
+  // ==========================================
+  // LÓGICA DO PAINEL
+  // ==========================================
   function formatDate(dateStr) {
     const date = new Date(dateStr);
     return date.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -491,7 +400,7 @@
           <h4>${m.title}</h4>
           <div class="materia-meta">
             <span class="${m.status === 'published' ? 'status-published' : 'status-draft'}">${m.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
-            ${m.category} · ${formatDate(m.date)} · ${m.views || 0} views
+            ${m.category} · Autor: ${m.author || 'admin'} · ${formatDate(m.date)} · ${m.views || 0} views
           </div>
         </div>
         <div class="materia-actions">
@@ -675,7 +584,9 @@
     const content = document.getElementById('editContent').innerHTML;
 
     if (!title) { alert('⚠️ O título é obrigatório.'); return; }
-    const data = { title, category, image, content, status };
+    
+    // Agora capturamos também o nome do autor pela variável currentUser
+    const data = { title, category, image, content, status, author: window.DB.currentUser };
 
     if (editingMateriaId) { window.DB.editMateria(editingMateriaId, data); alert('✅ Matéria atualizada com sucesso!'); } 
     else { window.DB.addMateria(data); alert('✅ Matéria criada com sucesso!'); }
@@ -722,17 +633,29 @@
     `).join('');
   }
 
-  function logout() {
-    if (confirm('Deseja sair do painel administrativo?')) window.location.href = 'index.html';
-  }
-
+  // ==========================================
+  // INICIALIZAÇÃO
+  // ==========================================
   document.addEventListener('DOMContentLoaded', async function() {
     if (typeof Database === 'undefined') {
-      alert('❌ Banco de dados não encontrado! Verifique se database.js está vinculado corretamente.');
+      alert('❌ Banco de dados não encontrado!');
       return;
     }
     window.DB = await Database.init();
-    updateDashboard(); loadSettings(); renderCategories(); renderMateriasAdmin(); renderUsers(); renderHistory();
+    
+    // Lógica de Autenticação na abertura
+    const loggedUser = sessionStorage.getItem('newsportal_user');
+    
+    if (loggedUser && window.DB.getUsers()[loggedUser]) {
+      // Usuário já está logado
+      window.DB.currentUser = loggedUser;
+      document.getElementById('loginOverlay').style.display = 'none';
+      
+      updateDashboard(); loadSettings(); renderCategories(); renderMateriasAdmin(); renderUsers(); renderHistory();
+    } else {
+      // Se não estiver logado, garante que a tela de login fique visível
+      document.getElementById('loginOverlay').style.display = 'flex';
+    }
   });
 </script>
 </body>
